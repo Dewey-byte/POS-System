@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Navbar } from '../layout/Navbar';
-import { Sidebar } from '../layout/Sidebar';
+import { Sidebar, type Page } from '../layout/Sidebar';
 import { SearchBar } from '../pos/SearchBar';
 import { CategoryFilterTabs } from '../pos/CategoryFilterTabs';
 import { ProductGrid } from '../pos/ProductGrid';
 import { CartSidebar } from '../pos/CartSidebar';
-
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings';
 
 interface POSScreenProps {
   onNavigate: (page: Page) => void;

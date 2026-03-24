@@ -1,33 +1,56 @@
 from flask import Blueprint, request, jsonify
+from models.user import User
 from extensions import db
-from models import User
+from werkzeug.security import check_password_hash, generate_password_hash
 
 user_bp = Blueprint("users", __name__)
 
-@user_bp.route("/", methods=["GET"])
-def get_users():
-    users = User.query.all()
-    return jsonify([
-        {
-            "id": u.id,
-            "name": u.name,
-            "username": u.username,
-            "role": u.role
-        } for u in users
-    ])
-
-@user_bp.route("/", methods=["POST"])
-def create_user():
+# LOGIN
+@user_bp.route("/login", methods=["POST"])
+def login():
     data = request.json
 
+    username = data.get("username")
+    password = data.get("password")
+
+    users = User.query.filter_by(username=username).first()
+
+    if users and check_password_hash(users.password, password):
+        return jsonify({
+            "message": "Login successful",
+            "user": {
+                "id": users.id,
+                "username": users.username,
+                "role": users.role
+            }
+        }), 200
+
+    return jsonify({"message": "Invalid username or password"}), 401
+
+
+# SIGNUP / REGISTER
+@user_bp.route("/signup", methods=["POST"])
+def signup():
+    data = request.json
+
+    name = data.get("name")
+    username = data.get("username")
+    password = data.get("password")
+
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"message": "Username already exists"}), 400
+
+    hashed_password = generate_password_hash(password)
+
     new_user = User(
-        name=data["name"],
-        username=data["username"],
-        password_hash=data["password"],
-        role=data["role"]
+        name=name,
+        username=username,
+        password=hashed_password,   # match DB column
+        role="user"
     )
 
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User created"}), 201
+    return jsonify({"message": "User registered successfully"}), 201

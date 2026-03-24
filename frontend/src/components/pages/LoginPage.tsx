@@ -11,14 +11,48 @@ interface LoginPageProps {
 export function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/users/login ", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Save token and user
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        onLogin(); // navigate to dashboard
+      } else {
+        alert(data.message || "Invalid login");
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Server error. Please try again.");
+    }
+
+    setLoading(false);
   };
 
   return (
     <div className="dark min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-20 left-10 rotate-12">
@@ -32,55 +66,77 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       {/* Login Card */}
       <div className="relative w-full max-w-md">
         <div className="bg-card border border-border rounded-lg shadow-2xl p-8">
+
           {/* Logo Header */}
           <div className="flex flex-col items-center mb-8">
             <div className="bg-primary/20 p-4 rounded-full mb-4 border-2 border-primary/30">
               <Bike className="w-12 h-12 text-primary" />
             </div>
-            <h1 className="text-foreground">Motorcycle POS</h1>
-            <p className="text-muted-foreground mt-2">Parts & Accessories</p>
+
+            <h1 className="text-foreground text-2xl font-bold">
+              Motorcycle POS
+            </h1>
+
+            <p className="text-muted-foreground mt-2">
+              Parts & Accessories
+            </p>
           </div>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
+
               <Input
                 id="username"
                 type="text"
                 placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                required
                 className="bg-input border-border focus:ring-primary"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
+
               <Input
                 id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
                 className="bg-input border-border focus:ring-primary"
               />
             </div>
 
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-              Login
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
-            <Button type="button" variant="ghost" className="w-full text-muted-foreground hover:text-primary">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full text-muted-foreground hover:text-primary"
+            >
               Forgot Password?
             </Button>
+
           </form>
         </div>
 
         {/* Footer */}
         <p className="text-center text-muted-foreground mt-4">
-          Demo credentials: Any username/password
+          Use your registered account to login
         </p>
+
       </div>
     </div>
   );

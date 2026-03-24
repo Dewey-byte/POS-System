@@ -1,7 +1,7 @@
 import { LayoutDashboard, ShoppingCart, Package, TrendingUp, Settings, Wrench, Users, UserCog } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'customers' | 'mechanics';
+export type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'customers' | 'mechanics';
 
 interface SidebarProps {
   currentPage: Page;
