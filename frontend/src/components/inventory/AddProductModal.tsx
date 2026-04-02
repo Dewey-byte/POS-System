@@ -22,28 +22,65 @@ import { Upload } from 'lucide-react';
 interface AddProductModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onProductAdded?: () => void; // callback to refresh product list
 }
 
-export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
+export function AddProductModal({ open, onOpenChange, onProductAdded }: AddProductModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
     category: '',
     price: '',
     stock: '',
+    image_url: '', // added image_url
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    onOpenChange(false);
-    setFormData({
-      name: '',
-      sku: '',
-      category: '',
-      price: '',
-      stock: '',
-    });
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/products/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          barcode: formData.sku,
+          category_id: formData.category, // make sure your Select value matches category_id from backend
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock),
+          image_url: formData.image_url,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to add product');
+      } else {
+        setFormData({
+          name: '',
+          sku: '',
+          category: '',
+          price: '',
+          stock: '',
+          image_url: '',
+        });
+        onOpenChange(false);
+        if (onProductAdded) onProductAdded(); // refresh product list
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,6 +94,9 @@ export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-500">{error}</p>}
+
+          {/* Product Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Product Name</Label>
             <Input
@@ -69,6 +109,7 @@ export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
             />
           </div>
 
+          {/* SKU */}
           <div className="space-y-2">
             <Label htmlFor="sku">SKU</Label>
             <Input
@@ -81,25 +122,31 @@ export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
             />
           </div>
 
+          {/* Category */}
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Select
               value={formData.category}
               onValueChange={(value) => setFormData({ ...formData, category: value })}
+              required
             >
               <SelectTrigger className="bg-input border-border">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="helmets">Helmets</SelectItem>
-                <SelectItem value="gear">Riding Gear</SelectItem>
-                <SelectItem value="parts">Parts</SelectItem>
-                <SelectItem value="accessories">Accessories</SelectItem>
-                <SelectItem value="oils">Oils & Fluids</SelectItem>
+                <SelectItem value="1">Engine Parts</SelectItem>
+                <SelectItem value="2">Electrical Parts</SelectItem>
+                <SelectItem value="3">Brake System</SelectItem>
+                <SelectItem value="4">Suspension</SelectItem>
+                <SelectItem value="5">Tires & Wheels</SelectItem>
+                <SelectItem value="6">Oils & Fluids</SelectItem>
+                <SelectItem value="7">Accessories</SelectItem>
+                <SelectItem value="8">Tools & Equipment</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
+          {/* Price & Stock */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Price</Label>
@@ -129,13 +176,16 @@ export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
             </div>
           </div>
 
+          {/* Image URL */}
           <div className="space-y-2">
-            <Label>Product Image</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">Click to upload or drag and drop</p>
-              <p className="text-muted-foreground">PNG, JPG up to 10MB</p>
-            </div>
+            <Label htmlFor="image_url">Product Image URL</Label>
+            <Input
+              id="image_url"
+              placeholder="Enter image URL"
+              value={formData.image_url}
+              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              className="bg-input border-border"
+            />
           </div>
 
           <DialogFooter>
@@ -147,8 +197,8 @@ export function AddProductModal({ open, onOpenChange }: AddProductModalProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Save Product
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Product'}
             </Button>
           </DialogFooter>
         </form>

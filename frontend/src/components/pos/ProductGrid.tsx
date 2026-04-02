@@ -1,4 +1,7 @@
-import { ProductCard } from './ProductCard';
+import { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { ProductCard } from "./ProductCard";
+import { debounce } from "lodash";
 
 interface Product {
   id: string;
@@ -13,103 +16,141 @@ interface Product {
 interface ProductGridProps {
   searchQuery: string;
   selectedCategory: string;
-  onAddToCart: (product: { id: string; name: string; price: number; image: string }) => void;
+  onAddToCart: (product: {
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+  }) => void;
 }
 
-const products: Product[] = [
-  {
-    id: '1',
-    name: 'Full Face Helmet',
-    price: 299.99,
-    category: 'helmets',
-    stock: 15,
-    image: 'https://images.unsplash.com/photo-1558862107-d49ef2a04d72?w=400&h=400&fit=crop',
-    sku: 'HLM-001',
-  },
-  {
-    id: '2',
-    name: 'Leather Riding Jacket',
-    price: 449.99,
-    category: 'gear',
-    stock: 8,
-    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop',
-    sku: 'GER-001',
-  },
-  {
-    id: '3',
-    name: 'Brake Pads Set',
-    price: 79.99,
-    category: 'parts',
-    stock: 25,
-    image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=400&fit=crop',
-    sku: 'PRT-001',
-  },
-  {
-    id: '4',
-    name: 'Chain Lock',
-    price: 129.99,
-    category: 'accessories',
-    stock: 12,
-    image: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=400&h=400&fit=crop',
-    sku: 'ACC-001',
-  },
-  {
-    id: '5',
-    name: 'Engine Oil 10W-40',
-    price: 24.99,
-    category: 'oils',
-    stock: 30,
-    image: 'https://images.unsplash.com/photo-1590859808308-3d2d9c515b1a?w=400&h=400&fit=crop',
-    sku: 'OIL-001',
-  },
-  {
-    id: '6',
-    name: 'Riding Gloves',
-    price: 89.99,
-    category: 'gear',
-    stock: 20,
-    image: 'https://images.unsplash.com/photo-1590422749897-dda4e2f3c7e7?w=400&h=400&fit=crop',
-    sku: 'GER-002',
-  },
-  {
-    id: '7',
-    name: 'LED Headlight',
-    price: 159.99,
-    category: 'parts',
-    stock: 10,
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop',
-    sku: 'PRT-002',
-  },
-  {
-    id: '8',
-    name: 'Phone Mount',
-    price: 39.99,
-    category: 'accessories',
-    stock: 35,
-    image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=400&fit=crop',
-    sku: 'ACC-002',
-  },
-];
+export function ProductGrid({
+  searchQuery,
+  selectedCategory,
+  onAddToCart,
+}: ProductGridProps) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
-export function ProductGrid({ searchQuery, selectedCategory, onAddToCart }: ProductGridProps) {
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  // 🔗 Fetch products once
+  useEffect(() => {
+    axios.get("http://127.0.0.1:5000/api/products")
+      .then((res) => {
+        setProducts(res.data);
+        setDisplayedProducts(res.data.slice(0, 20)); // initial load
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  // ⚡ Debounced filter
+  const debouncedFilter = useRef(
+    debounce((query: string, category: string, allProducts: Product[]) => {
+      const filtered = allProducts.filter((product) => {
+        const matchesSearch =
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.sku.toLowerCase().includes(query.toLowerCase());
+
+        const matchesCategory =
+          category === "all" || product.category === category;
+
+        return matchesSearch && matchesCategory;
+      });
+
+      setDisplayedProducts(filtered.slice(0, 20));
+      setPage(1);
+    }, 300)
+  ).current;
+
+  useEffect(() => {
+    debouncedFilter(searchQuery, selectedCategory, products);
+  }, [searchQuery, selectedCategory, products]);
+
+  // 🔄 Infinite Scroll Logic
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        loadMore();
+      }
+    });
+
+    if (observerRef.current) observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [displayedProducts]);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    const start = 0;
+    const end = nextPage * 20;
+
+    const filtered = products.filter((product) => {
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesCategory =
+        selectedCategory === "all" || product.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+
+    setDisplayedProducts(filtered.slice(start, end));
+    setPage(nextPage);
+  };
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        Loading products...
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {filteredProducts.map((product) => (
-        <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} />
-      ))}
-      {filteredProducts.length === 0 && (
-        <div className="col-span-full text-center py-12 text-muted-foreground">
-          No products found
+    <div className="h-full flex flex-col">
+      
+      {/* 📌 Sticky Category Header */}
+      <div className="sticky top-0 bg-white z-10 p-2 border-b">
+        <h2 className="font-semibold text-lg">
+          {selectedCategory === "all" ? "All Products" : selectedCategory}
+        </h2>
+      </div>
+
+      {/* 🔥 Scrollable Grid */}
+      <div className="flex-1 overflow-y-auto px-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          
+          {displayedProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                ...product,
+                image: product.image || "/default-product.png",
+              }}
+              onAddToCart={onAddToCart}
+            />
+          ))}
+
+          {displayedProducts.length === 0 && (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              No products found
+            </div>
+          )}
         </div>
-      )}
+
+        {/* 🔄 Infinite Scroll Trigger */}
+        <div ref={observerRef} className="h-10 flex items-center justify-center">
+          <span className="text-sm text-gray-400">Loading more...</span>
+        </div>
+      </div>
     </div>
   );
 }

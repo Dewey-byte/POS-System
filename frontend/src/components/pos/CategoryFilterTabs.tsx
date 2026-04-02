@@ -7,13 +7,15 @@ interface CategoryFilterTabsProps {
 
 const categories = [
   { id: 'all', label: 'All Products' },
-  { id: 'helmets', label: 'Helmets' },
-  { id: 'gear', label: 'Riding Gear' },
-  { id: 'parts', label: 'Parts' },
-  { id: 'accessories', label: 'Accessories' },
-  { id: 'oils', label: 'Oils & Fluids' },
+  { id: 'Engine Parts', label: 'Engine Parts' },
+  { id: 'Electrical Parts', label: 'Electrical Parts' },
+  { id: 'Brake System', label: 'Brake System' },
+  { id: 'Suspension', label: 'Suspension' },
+  { id: 'Tires & Wheels', label: 'Tires & Wheels' },
+  { id: 'Oils & Fluids', label: 'Oils & Fluids' },
+  { id: 'Accessories', label: 'Accessories' },
+  { id: 'Tools & Equipment', label: 'Tools & Equipment' },
 ];
-
 export function CategoryFilterTabs({ selected, onSelect }: CategoryFilterTabsProps) {
   return (
     <div className="flex gap-2 overflow-x-auto pb-2">
