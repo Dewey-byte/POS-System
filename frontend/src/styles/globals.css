@@ -193,3 +193,9 @@
 html {
   font-size: var(--font-size);
 }
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 🔥 stops whole page scroll */
+}

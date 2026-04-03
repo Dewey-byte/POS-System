@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Navbar } from '../layout/Navbar';
-import { Sidebar, type Page } from '../layout/Sidebar';
-import { SearchBar } from '../pos/SearchBar';
-import { CategoryFilterTabs } from '../pos/CategoryFilterTabs';
-import { ProductGrid } from '../pos/ProductGrid';
-import { CartSidebar } from '../pos/CartSidebar';
+import { useState } from "react";
+import { Navbar } from "../layout/Navbar";
+import { Sidebar, type Page } from "../layout/Sidebar";
+import { SearchBar } from "../pos/SearchBar";
+import { CategoryFilterTabs } from "../pos/CategoryFilterTabs";
+import { ProductGrid } from "../pos/ProductGrid";
+import { CartSidebar } from "../pos/CartSidebar";
 
 interface POSScreenProps {
   onNavigate: (page: Page) => void;
@@ -19,29 +19,59 @@ export interface CartItem {
   image: string;
 }
 
-export function POSScreen({ onNavigate, onLogout }: POSScreenProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [cart, setCart] = useState<CartItem[]>([]);
+export function POSScreen({
+  onNavigate,
+  onLogout,
+}: POSScreenProps) {
+  const [searchQuery, setSearchQuery] =
+    useState("");
+  const [selectedCategory, setSelectedCategory] =
+    useState("all");
+  const [cart, setCart] = useState<CartItem[]>(
+    []
+  );
 
-  const addToCart = (product: { id: string; name: string; price: number; image: string }) => {
+  const addToCart = (product: {
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+  }) => {
     setCart((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id);
+      const existingItem = prev.find(
+        (item) => item.id === product.id
+      );
+
       if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+              }
+            : item
         );
       }
+
       return [...prev, { ...product, quantity: 1 }];
     });
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (
+    id: string,
+    quantity: number
+  ) => {
     if (quantity === 0) {
-      setCart((prev) => prev.filter((item) => item.id !== id));
+      setCart((prev) =>
+        prev.filter((item) => item.id !== id)
+      );
     } else {
       setCart((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+        prev.map((item) =>
+          item.id === id
+            ? { ...item, quantity }
+            : item
+        )
       );
     }
   };
@@ -49,36 +79,63 @@ export function POSScreen({ onNavigate, onLogout }: POSScreenProps) {
   const clearCart = () => setCart([]);
 
   return (
-    <div className="dark min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background flex flex-col">
+
+      {/* Sticky Navbar */}
       <Navbar onLogout={onLogout} />
-      <div className="flex">
-        <Sidebar currentPage="pos" onNavigate={onNavigate} />
-        
-        <main className="flex-1 flex overflow-hidden">
-          {/* Products Section */}
-          <div className="flex-1 p-6 overflow-auto">
-            <div className="space-y-6">
+
+      {/* Layout */}
+      <div className="flex flex-1">
+
+        {/* Sidebar */}
+        <Sidebar
+          currentPage="pos"
+          onNavigate={onNavigate}
+        />
+
+        {/* Main POS Layout */}
+        <main className="flex flex-1 h-[calc(100vh-73px)] overflow-hidden">
+
+          {/* Products Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="space-y-6 max-w-6xl">
+
               <div>
-                <h1 className="text-foreground">Point of Sale</h1>
-                <p className="text-muted-foreground mt-1">Select products to add to cart</p>
+                <h1 className="text-foreground">
+                  Point of Sale
+                </h1>
+
+                <p className="text-muted-foreground mt-1">
+                  Select products to add to cart
+                </p>
               </div>
 
-              <SearchBar value={searchQuery} onChange={setSearchQuery} />
-              <CategoryFilterTabs selected={selectedCategory} onSelect={setSelectedCategory} />
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
+
+              <CategoryFilterTabs
+                selected={selectedCategory}
+                onSelect={setSelectedCategory}
+              />
+
               <ProductGrid
                 searchQuery={searchQuery}
                 selectedCategory={selectedCategory}
                 onAddToCart={addToCart}
               />
+
             </div>
           </div>
 
-          {/* Cart Section */}
+          {/* Fixed Cart Sidebar */}
           <CartSidebar
             cart={cart}
             onUpdateQuantity={updateQuantity}
             onClearCart={clearCart}
           />
+
         </main>
       </div>
     </div>
