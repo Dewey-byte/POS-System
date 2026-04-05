@@ -4,54 +4,122 @@ import { Sidebar } from '../layout/Sidebar';
 import { InventoryTable } from '../inventory/InventoryTable';
 import { AddProductModal } from '../inventory/AddProductModal';
 import { Button } from '../ui/button';
-import { Plus, Download } from 'lucide-react';
+import { Input } from '../ui/input';
+import { Plus, Download, Search } from 'lucide-react';
 
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings';
+type Page =
+  | 'dashboard'
+  | 'pos'
+  | 'inventory'
+  | 'sales'
+  | 'settings'
+  | 'services'
+  | 'customers'
+  | 'mechanics';
 
 interface InventoryPageProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-export function InventoryPage({ onNavigate, onLogout }: InventoryPageProps) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+export function InventoryPage({
+  onNavigate,
+  onLogout,
+}: InventoryPageProps) {
+
+  const [isAddModalOpen, setIsAddModalOpen] =
+    useState(false);
+
+  const [searchQuery, setSearchQuery] =
+    useState('');
 
   return (
-    <div className="dark min-h-screen bg-background">
+    <div className="dark min-h-screen bg-background flex flex-col">
+
+      {/* Sticky Navbar */}
       <Navbar onLogout={onLogout} />
-      <div className="flex">
-        <Sidebar currentPage="inventory" onNavigate={onNavigate} />
-        
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Fixed Sidebar */}
+        <Sidebar
+          currentPage="inventory"
+          onNavigate={onNavigate}
+        />
+
+        {/* Scrollable Content Area */}
+        <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
+
+          <div className="max-w-7xl mx-auto p-6 space-y-6">
+
             {/* Page Header */}
             <div className="flex items-center justify-between">
+
               <div>
-                <h1 className="text-foreground">Inventory Management</h1>
-                <p className="text-muted-foreground mt-1">Manage your product stock and details</p>
+                <h1 className="text-foreground">
+                  Inventory Management
+                </h1>
+
+                <p className="text-muted-foreground mt-1">
+                  Manage your product stock and details
+                </p>
               </div>
+
               <div className="flex gap-3">
-                <Button variant="outline" className="border-border">
+
+                <Button
+                  variant="outline"
+                  className="border-border"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>
+
                 <Button
-                  onClick={() => setIsAddModalOpen(true)}
+                  onClick={() =>
+                    setIsAddModalOpen(true)
+                  }
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Product
                 </Button>
+
               </div>
+
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
+              <Input
+                placeholder="Search products by name, category, or SKU..."
+                value={searchQuery}
+                onChange={(e) =>
+                  setSearchQuery(e.target.value)
+                }
+                className="pl-9"
+              />
+
             </div>
 
             {/* Inventory Table */}
-            <InventoryTable />
+            <InventoryTable searchQuery={searchQuery} />
+
           </div>
+
         </main>
+
       </div>
 
-      <AddProductModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+      {/* Add Product Modal */}
+      <AddProductModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+      />
+
     </div>
   );
 }

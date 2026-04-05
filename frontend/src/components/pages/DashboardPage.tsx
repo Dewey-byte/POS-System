@@ -35,7 +35,7 @@ export function DashboardPage({
   onLogout,
 }: DashboardPageProps) {
   return (
-    <div className="dark min-h-screen bg-background flex flex-col">
+    <div className="dark h-screen bg-background flex flex-col overflow-hidden">
       
       {/* Sticky Navbar */}
       <Navbar onLogout={onLogout} />
@@ -55,7 +55,7 @@ export function DashboardPage({
           {/* Page Header */}
           <div className="p-6 border-b border-border bg-background sticky top-0 z-10">
             <div className="max-w-7xl mx-auto">
-              <h1 className="text-foreground">
+              <h1 className="text-foreground">d
                 Dashboard
               </h1>
 
