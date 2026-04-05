@@ -1,0 +1,1488 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "name": "Engine Parts"
+        },
+        {
+            "id": 2,
+            "name": "Electrical Parts"
+        },
+        {
+            "id": 3,
+            "name": "Brake System"
+        },
+        {
+            "id": 4,
+            "name": "Suspension"
+        },
+        {
+            "id": 5,
+            "name": "Tires & Wheels"
+        },
+        {
+            "id": 6,
+            "name": "Oils & Fluids"
+        },
+        {
+            "id": 7,
+            "name": "Accessories"
+        },
+        {
+            "id": 8,
+            "name": "Tools & Equipment"
+        }
+    ],
+    "products": [
+        {
+            "id": 1,
+            "name": "Piston Kit",
+            "price": 1500.0,
+            "barcode": "ENG001",
+            "stock": 20,
+            "image_url": "https://www.wiseco.co.uk/cdn/shop/files/BIGPISTONKIT_0a2b044d-fce2-4882-a20b-65ff2b217b88.jpg?v=1696418837",
+            "category_id": 1
+        },
+        {
+            "id": 2,
+            "name": "Cylinder Block",
+            "price": 3500.0,
+            "barcode": "ENG002",
+            "stock": 15,
+            "image_url": "engine2.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 3,
+            "name": "Spark Plug",
+            "price": 250.0,
+            "barcode": "ENG003",
+            "stock": 100,
+            "image_url": "engine3.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 4,
+            "name": "Camshaft",
+            "price": 2200.0,
+            "barcode": "ENG004",
+            "stock": 10,
+            "image_url": "engine4.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 5,
+            "name": "Crankshaft",
+            "price": 5000.0,
+            "barcode": "ENG005",
+            "stock": 5,
+            "image_url": "engine5.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 6,
+            "name": "Timing Belt",
+            "price": 1200.0,
+            "barcode": "ENG006",
+            "stock": 30,
+            "image_url": "engine6.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 7,
+            "name": "Oil Pump",
+            "price": 1800.0,
+            "barcode": "ENG007",
+            "stock": 20,
+            "image_url": "engine7.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 8,
+            "name": "Fuel Injector",
+            "price": 2000.0,
+            "barcode": "ENG008",
+            "stock": 18,
+            "image_url": "engine8.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 9,
+            "name": "Radiator Fan",
+            "price": 1700.0,
+            "barcode": "ENG009",
+            "stock": 12,
+            "image_url": "engine9.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 10,
+            "name": "Valve Set",
+            "price": 1600.0,
+            "barcode": "ENG010",
+            "stock": 20,
+            "image_url": "engine10.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 11,
+            "name": "Engine Mount",
+            "price": 1400.0,
+            "barcode": "ENG011",
+            "stock": 25,
+            "image_url": "engine11.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 12,
+            "name": "Throttle Body",
+            "price": 3000.0,
+            "barcode": "ENG012",
+            "stock": 10,
+            "image_url": "engine12.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 13,
+            "name": "Air Intake Hose",
+            "price": 900.0,
+            "barcode": "ENG013",
+            "stock": 30,
+            "image_url": "engine13.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 14,
+            "name": "Turbo Charger",
+            "price": 8000.0,
+            "barcode": "ENG014",
+            "stock": 5,
+            "image_url": "engine14.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 15,
+            "name": "Gasket Set",
+            "price": 1100.0,
+            "barcode": "ENG015",
+            "stock": 35,
+            "image_url": "engine15.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 16,
+            "name": "Oil Filter",
+            "price": 300.0,
+            "barcode": "ENG016",
+            "stock": 50,
+            "image_url": "engine16.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 17,
+            "name": "Fuel Pump",
+            "price": 2200.0,
+            "barcode": "ENG017",
+            "stock": 15,
+            "image_url": "engine17.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 18,
+            "name": "Engine Cover",
+            "price": 1300.0,
+            "barcode": "ENG018",
+            "stock": 20,
+            "image_url": "engine18.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 19,
+            "name": "Cooling Fan",
+            "price": 1900.0,
+            "barcode": "ENG019",
+            "stock": 18,
+            "image_url": "engine19.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 20,
+            "name": "Water Pump",
+            "price": 2100.0,
+            "barcode": "ENG020",
+            "stock": 15,
+            "image_url": "engine20.jpg",
+            "category_id": 1
+        },
+        {
+            "id": 21,
+            "name": "Car Battery 12V",
+            "price": 4500.0,
+            "barcode": "ELE001",
+            "stock": 15,
+            "image_url": "elec1.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 22,
+            "name": "Alternator",
+            "price": 6000.0,
+            "barcode": "ELE002",
+            "stock": 10,
+            "image_url": "elec2.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 23,
+            "name": "Starter Motor",
+            "price": 3500.0,
+            "barcode": "ELE003",
+            "stock": 12,
+            "image_url": "elec3.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 24,
+            "name": "Headlight LED",
+            "price": 1200.0,
+            "barcode": "ELE004",
+            "stock": 30,
+            "image_url": "elec4.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 25,
+            "name": "Tail Light",
+            "price": 800.0,
+            "barcode": "ELE005",
+            "stock": 25,
+            "image_url": "elec5.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 26,
+            "name": "Ignition Coil",
+            "price": 1500.0,
+            "barcode": "ELE006",
+            "stock": 20,
+            "image_url": "elec6.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 27,
+            "name": "Fuse Box",
+            "price": 900.0,
+            "barcode": "ELE007",
+            "stock": 30,
+            "image_url": "elec7.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 28,
+            "name": "Relay Switch",
+            "price": 500.0,
+            "barcode": "ELE008",
+            "stock": 40,
+            "image_url": "elec8.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 29,
+            "name": "Horn",
+            "price": 700.0,
+            "barcode": "ELE009",
+            "stock": 35,
+            "image_url": "elec9.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 30,
+            "name": "Wiring Harness",
+            "price": 2000.0,
+            "barcode": "ELE010",
+            "stock": 10,
+            "image_url": "elec10.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 31,
+            "name": "Car Stereo",
+            "price": 5500.0,
+            "barcode": "ELE011",
+            "stock": 8,
+            "image_url": "elec11.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 32,
+            "name": "Voltage Regulator",
+            "price": 1200.0,
+            "barcode": "ELE012",
+            "stock": 15,
+            "image_url": "elec12.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 33,
+            "name": "Battery Terminal",
+            "price": 300.0,
+            "barcode": "ELE013",
+            "stock": 50,
+            "image_url": "elec13.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 34,
+            "name": "Spark Plug Wire",
+            "price": 400.0,
+            "barcode": "ELE014",
+            "stock": 45,
+            "image_url": "elec14.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 35,
+            "name": "Fog Light",
+            "price": 1000.0,
+            "barcode": "ELE015",
+            "stock": 20,
+            "image_url": "elec15.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 36,
+            "name": "Dashboard Display",
+            "price": 7000.0,
+            "barcode": "ELE016",
+            "stock": 5,
+            "image_url": "elec16.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 37,
+            "name": "Power Window Motor",
+            "price": 2500.0,
+            "barcode": "ELE017",
+            "stock": 12,
+            "image_url": "elec17.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 38,
+            "name": "Car Alarm System",
+            "price": 3000.0,
+            "barcode": "ELE018",
+            "stock": 10,
+            "image_url": "elec18.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 39,
+            "name": "GPS Tracker",
+            "price": 3500.0,
+            "barcode": "ELE019",
+            "stock": 7,
+            "image_url": "elec19.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 40,
+            "name": "USB Charger Port",
+            "price": 600.0,
+            "barcode": "ELE020",
+            "stock": 40,
+            "image_url": "elec20.jpg",
+            "category_id": 2
+        },
+        {
+            "id": 41,
+            "name": "Brake Pad Set",
+            "price": 1800.0,
+            "barcode": "BRK001",
+            "stock": 25,
+            "image_url": "brake1.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 42,
+            "name": "Brake Disc Rotor",
+            "price": 2500.0,
+            "barcode": "BRK002",
+            "stock": 20,
+            "image_url": "brake2.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 43,
+            "name": "Brake Caliper",
+            "price": 3000.0,
+            "barcode": "BRK003",
+            "stock": 10,
+            "image_url": "brake3.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 44,
+            "name": "Brake Fluid",
+            "price": 600.0,
+            "barcode": "BRK004",
+            "stock": 50,
+            "image_url": "brake4.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 45,
+            "name": "Brake Hose",
+            "price": 900.0,
+            "barcode": "BRK005",
+            "stock": 30,
+            "image_url": "brake5.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 46,
+            "name": "Master Cylinder",
+            "price": 3500.0,
+            "barcode": "BRK006",
+            "stock": 8,
+            "image_url": "brake6.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 47,
+            "name": "Wheel Cylinder",
+            "price": 1500.0,
+            "barcode": "BRK007",
+            "stock": 15,
+            "image_url": "brake7.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 48,
+            "name": "Brake Booster",
+            "price": 4000.0,
+            "barcode": "BRK008",
+            "stock": 5,
+            "image_url": "brake8.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 49,
+            "name": "ABS Sensor",
+            "price": 1200.0,
+            "barcode": "BRK009",
+            "stock": 20,
+            "image_url": "brake9.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 50,
+            "name": "Parking Brake Cable",
+            "price": 800.0,
+            "barcode": "BRK010",
+            "stock": 25,
+            "image_url": "brake10.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 51,
+            "name": "Drum Brake",
+            "price": 2000.0,
+            "barcode": "BRK011",
+            "stock": 15,
+            "image_url": "brake11.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 52,
+            "name": "Brake Shoe",
+            "price": 1100.0,
+            "barcode": "BRK012",
+            "stock": 30,
+            "image_url": "brake12.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 53,
+            "name": "Brake Switch",
+            "price": 500.0,
+            "barcode": "BRK013",
+            "stock": 40,
+            "image_url": "brake13.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 54,
+            "name": "Hydraulic Line",
+            "price": 1300.0,
+            "barcode": "BRK014",
+            "stock": 20,
+            "image_url": "brake14.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 55,
+            "name": "Brake Kit",
+            "price": 4500.0,
+            "barcode": "BRK015",
+            "stock": 10,
+            "image_url": "brake15.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 56,
+            "name": "Disc Pad Kit",
+            "price": 2200.0,
+            "barcode": "BRK016",
+            "stock": 18,
+            "image_url": "brake16.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 57,
+            "name": "Brake Sensor Wire",
+            "price": 600.0,
+            "barcode": "BRK017",
+            "stock": 35,
+            "image_url": "brake17.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 58,
+            "name": "Brake Adjuster",
+            "price": 700.0,
+            "barcode": "BRK018",
+            "stock": 30,
+            "image_url": "brake18.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 59,
+            "name": "Rotor Screw",
+            "price": 200.0,
+            "barcode": "BRK019",
+            "stock": 60,
+            "image_url": "brake19.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 60,
+            "name": "Brake Cleaner",
+            "price": 400.0,
+            "barcode": "BRK020",
+            "stock": 50,
+            "image_url": "brake20.jpg",
+            "category_id": 3
+        },
+        {
+            "id": 61,
+            "name": "Shock Absorber",
+            "price": 2200.0,
+            "barcode": "SUS001",
+            "stock": 20,
+            "image_url": "sus1.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 62,
+            "name": "Strut Assembly",
+            "price": 3500.0,
+            "barcode": "SUS002",
+            "stock": 10,
+            "image_url": "sus2.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 63,
+            "name": "Coil Spring",
+            "price": 1800.0,
+            "barcode": "SUS003",
+            "stock": 15,
+            "image_url": "sus3.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 64,
+            "name": "Control Arm",
+            "price": 2500.0,
+            "barcode": "SUS004",
+            "stock": 12,
+            "image_url": "sus4.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 65,
+            "name": "Ball Joint",
+            "price": 900.0,
+            "barcode": "SUS005",
+            "stock": 30,
+            "image_url": "sus5.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 66,
+            "name": "Tie Rod End",
+            "price": 800.0,
+            "barcode": "SUS006",
+            "stock": 35,
+            "image_url": "sus6.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 67,
+            "name": "Stabilizer Link",
+            "price": 700.0,
+            "barcode": "SUS007",
+            "stock": 40,
+            "image_url": "sus7.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 68,
+            "name": "Leaf Spring",
+            "price": 3000.0,
+            "barcode": "SUS008",
+            "stock": 8,
+            "image_url": "sus8.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 69,
+            "name": "Suspension Bushing",
+            "price": 600.0,
+            "barcode": "SUS009",
+            "stock": 45,
+            "image_url": "sus9.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 70,
+            "name": "Wheel Bearing",
+            "price": 1500.0,
+            "barcode": "SUS010",
+            "stock": 20,
+            "image_url": "sus10.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 71,
+            "name": "Axle Shaft",
+            "price": 2800.0,
+            "barcode": "SUS011",
+            "stock": 10,
+            "image_url": "sus11.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 72,
+            "name": "CV Joint",
+            "price": 2000.0,
+            "barcode": "SUS012",
+            "stock": 15,
+            "image_url": "sus12.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 73,
+            "name": "Steering Rack",
+            "price": 5000.0,
+            "barcode": "SUS013",
+            "stock": 5,
+            "image_url": "sus13.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 74,
+            "name": "Power Steering Pump",
+            "price": 3200.0,
+            "barcode": "SUS014",
+            "stock": 8,
+            "image_url": "sus14.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 75,
+            "name": "Shock Mount",
+            "price": 900.0,
+            "barcode": "SUS015",
+            "stock": 25,
+            "image_url": "sus15.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 76,
+            "name": "Strut Mount",
+            "price": 1100.0,
+            "barcode": "SUS016",
+            "stock": 20,
+            "image_url": "sus16.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 77,
+            "name": "Alignment Kit",
+            "price": 2500.0,
+            "barcode": "SUS017",
+            "stock": 12,
+            "image_url": "sus17.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 78,
+            "name": "Sway Bar",
+            "price": 1800.0,
+            "barcode": "SUS018",
+            "stock": 15,
+            "image_url": "sus18.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 79,
+            "name": "Hub Assembly",
+            "price": 3000.0,
+            "barcode": "SUS019",
+            "stock": 10,
+            "image_url": "sus19.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 80,
+            "name": "Steering Knuckle",
+            "price": 2700.0,
+            "barcode": "SUS020",
+            "stock": 10,
+            "image_url": "sus20.jpg",
+            "category_id": 4
+        },
+        {
+            "id": 81,
+            "name": "All-Terrain Tire",
+            "price": 5000.0,
+            "barcode": "TIR001",
+            "stock": 15,
+            "image_url": "tire1.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 82,
+            "name": "All-Season Tire",
+            "price": 4500.0,
+            "barcode": "TIR002",
+            "stock": 20,
+            "image_url": "tire2.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 83,
+            "name": "Performance Tire",
+            "price": 6000.0,
+            "barcode": "TIR003",
+            "stock": 10,
+            "image_url": "tire3.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 84,
+            "name": "Steel Rim",
+            "price": 2500.0,
+            "barcode": "TIR004",
+            "stock": 12,
+            "image_url": "tire4.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 85,
+            "name": "Alloy Wheel",
+            "price": 7000.0,
+            "barcode": "TIR005",
+            "stock": 8,
+            "image_url": "tire5.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 86,
+            "name": "Wheel Cap",
+            "price": 500.0,
+            "barcode": "TIR006",
+            "stock": 40,
+            "image_url": "tire6.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 87,
+            "name": "Tire Valve",
+            "price": 200.0,
+            "barcode": "TIR007",
+            "stock": 60,
+            "image_url": "tire7.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 88,
+            "name": "Wheel Spacer",
+            "price": 800.0,
+            "barcode": "TIR008",
+            "stock": 30,
+            "image_url": "tire8.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 89,
+            "name": "Tire Repair Kit",
+            "price": 900.0,
+            "barcode": "TIR009",
+            "stock": 35,
+            "image_url": "tire9.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 90,
+            "name": "Wheel Lug Nut",
+            "price": 300.0,
+            "barcode": "TIR010",
+            "stock": 50,
+            "image_url": "tire10.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 91,
+            "name": "Spare Tire",
+            "price": 4000.0,
+            "barcode": "TIR011",
+            "stock": 10,
+            "image_url": "tire11.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 92,
+            "name": "Mud Tire",
+            "price": 5500.0,
+            "barcode": "TIR012",
+            "stock": 8,
+            "image_url": "tire12.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 93,
+            "name": "Racing Tire",
+            "price": 7500.0,
+            "barcode": "TIR013",
+            "stock": 6,
+            "image_url": "tire13.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 94,
+            "name": "Wheel Hub",
+            "price": 2000.0,
+            "barcode": "TIR014",
+            "stock": 15,
+            "image_url": "tire14.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 95,
+            "name": "Tire Inflator",
+            "price": 1200.0,
+            "barcode": "TIR015",
+            "stock": 20,
+            "image_url": "tire15.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 96,
+            "name": "Valve Cap",
+            "price": 100.0,
+            "barcode": "TIR016",
+            "stock": 80,
+            "image_url": "tire16.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 97,
+            "name": "Wheel Lock",
+            "price": 700.0,
+            "barcode": "TIR017",
+            "stock": 30,
+            "image_url": "tire17.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 98,
+            "name": "Tire Pressure Sensor",
+            "price": 1500.0,
+            "barcode": "TIR018",
+            "stock": 18,
+            "image_url": "tire18.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 99,
+            "name": "Offroad Tire",
+            "price": 6500.0,
+            "barcode": "TIR019",
+            "stock": 7,
+            "image_url": "tire19.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 100,
+            "name": "Wheel Balancer",
+            "price": 3000.0,
+            "barcode": "TIR020",
+            "stock": 10,
+            "image_url": "tire20.jpg",
+            "category_id": 5
+        },
+        {
+            "id": 101,
+            "name": "Engine Oil 5W-30",
+            "price": 1200.0,
+            "barcode": "OIL001",
+            "stock": 40,
+            "image_url": "oil1.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 102,
+            "name": "Engine Oil 10W-40",
+            "price": 1300.0,
+            "barcode": "OIL002",
+            "stock": 35,
+            "image_url": "oil2.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 103,
+            "name": "Brake Fluid",
+            "price": 600.0,
+            "barcode": "OIL003",
+            "stock": 50,
+            "image_url": "oil3.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 104,
+            "name": "Transmission Fluid",
+            "price": 1500.0,
+            "barcode": "OIL004",
+            "stock": 20,
+            "image_url": "oil4.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 105,
+            "name": "Coolant",
+            "price": 800.0,
+            "barcode": "OIL005",
+            "stock": 30,
+            "image_url": "oil5.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 106,
+            "name": "Power Steering Fluid",
+            "price": 700.0,
+            "barcode": "OIL006",
+            "stock": 25,
+            "image_url": "oil6.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 107,
+            "name": "Gear Oil",
+            "price": 1400.0,
+            "barcode": "OIL007",
+            "stock": 20,
+            "image_url": "oil7.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 108,
+            "name": "Hydraulic Oil",
+            "price": 1600.0,
+            "barcode": "OIL008",
+            "stock": 15,
+            "image_url": "oil8.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 109,
+            "name": "Chain Lubricant",
+            "price": 500.0,
+            "barcode": "OIL009",
+            "stock": 40,
+            "image_url": "oil9.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 110,
+            "name": "Engine Flush",
+            "price": 900.0,
+            "barcode": "OIL010",
+            "stock": 30,
+            "image_url": "oil10.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 111,
+            "name": "Radiator Coolant",
+            "price": 850.0,
+            "barcode": "OIL011",
+            "stock": 25,
+            "image_url": "oil11.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 112,
+            "name": "ATF Fluid",
+            "price": 1500.0,
+            "barcode": "OIL012",
+            "stock": 20,
+            "image_url": "oil12.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 113,
+            "name": "Motor Oil Synthetic",
+            "price": 1800.0,
+            "barcode": "OIL013",
+            "stock": 15,
+            "image_url": "oil13.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 114,
+            "name": "Motor Oil Mineral",
+            "price": 1100.0,
+            "barcode": "OIL014",
+            "stock": 35,
+            "image_url": "oil14.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 115,
+            "name": "Oil Additive",
+            "price": 600.0,
+            "barcode": "OIL015",
+            "stock": 40,
+            "image_url": "oil15.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 116,
+            "name": "Fuel Additive",
+            "price": 700.0,
+            "barcode": "OIL016",
+            "stock": 30,
+            "image_url": "oil16.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 117,
+            "name": "Leak Stop Fluid",
+            "price": 900.0,
+            "barcode": "OIL017",
+            "stock": 25,
+            "image_url": "oil17.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 118,
+            "name": "Grease",
+            "price": 400.0,
+            "barcode": "OIL018",
+            "stock": 50,
+            "image_url": "oil18.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 119,
+            "name": "Differential Oil",
+            "price": 1600.0,
+            "barcode": "OIL019",
+            "stock": 15,
+            "image_url": "oil19.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 120,
+            "name": "Windshield Fluid",
+            "price": 300.0,
+            "barcode": "OIL020",
+            "stock": 60,
+            "image_url": "oil20.jpg",
+            "category_id": 6
+        },
+        {
+            "id": 121,
+            "name": "Car Seat Cover",
+            "price": 800.0,
+            "barcode": "ACC001",
+            "stock": 35,
+            "image_url": "acc1.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 122,
+            "name": "Steering Wheel Cover",
+            "price": 500.0,
+            "barcode": "ACC002",
+            "stock": 40,
+            "image_url": "acc2.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 123,
+            "name": "Car Floor Mat",
+            "price": 1000.0,
+            "barcode": "ACC003",
+            "stock": 25,
+            "image_url": "acc3.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 124,
+            "name": "Phone Holder",
+            "price": 300.0,
+            "barcode": "ACC004",
+            "stock": 50,
+            "image_url": "acc4.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 125,
+            "name": "Car Charger",
+            "price": 400.0,
+            "barcode": "ACC005",
+            "stock": 45,
+            "image_url": "acc5.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 126,
+            "name": "Dash Cam",
+            "price": 3500.0,
+            "barcode": "ACC006",
+            "stock": 10,
+            "image_url": "acc6.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 127,
+            "name": "Air Freshener",
+            "price": 150.0,
+            "barcode": "ACC007",
+            "stock": 80,
+            "image_url": "acc7.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 128,
+            "name": "Sunshade",
+            "price": 600.0,
+            "barcode": "ACC008",
+            "stock": 30,
+            "image_url": "acc8.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 129,
+            "name": "Car Organizer",
+            "price": 700.0,
+            "barcode": "ACC009",
+            "stock": 25,
+            "image_url": "acc9.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 130,
+            "name": "LED Interior Light",
+            "price": 900.0,
+            "barcode": "ACC010",
+            "stock": 20,
+            "image_url": "acc10.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 131,
+            "name": "Seat Cushion",
+            "price": 800.0,
+            "barcode": "ACC011",
+            "stock": 30,
+            "image_url": "acc11.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 132,
+            "name": "Rear Camera",
+            "price": 2500.0,
+            "barcode": "ACC012",
+            "stock": 12,
+            "image_url": "acc12.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 133,
+            "name": "Bluetooth Adapter",
+            "price": 1200.0,
+            "barcode": "ACC013",
+            "stock": 15,
+            "image_url": "acc13.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 134,
+            "name": "Roof Rack",
+            "price": 5000.0,
+            "barcode": "ACC014",
+            "stock": 8,
+            "image_url": "acc14.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 135,
+            "name": "Car Cover",
+            "price": 1500.0,
+            "barcode": "ACC015",
+            "stock": 20,
+            "image_url": "acc15.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 136,
+            "name": "Key Holder",
+            "price": 200.0,
+            "barcode": "ACC016",
+            "stock": 60,
+            "image_url": "acc16.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 137,
+            "name": "Mini Vacuum",
+            "price": 1800.0,
+            "barcode": "ACC017",
+            "stock": 10,
+            "image_url": "acc17.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 138,
+            "name": "Cup Holder",
+            "price": 300.0,
+            "barcode": "ACC018",
+            "stock": 40,
+            "image_url": "acc18.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 139,
+            "name": "Car Mirror",
+            "price": 900.0,
+            "barcode": "ACC019",
+            "stock": 25,
+            "image_url": "acc19.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 140,
+            "name": "Trunk Organizer",
+            "price": 1200.0,
+            "barcode": "ACC020",
+            "stock": 20,
+            "image_url": "acc20.jpg",
+            "category_id": 7
+        },
+        {
+            "id": 141,
+            "name": "Hydraulic Jack",
+            "price": 3500.0,
+            "barcode": "TOL001",
+            "stock": 10,
+            "image_url": "tool1.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 142,
+            "name": "Car Jack Stand",
+            "price": 2000.0,
+            "barcode": "TOL002",
+            "stock": 15,
+            "image_url": "tool2.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 143,
+            "name": "Socket Wrench Set",
+            "price": 2500.0,
+            "barcode": "TOL003",
+            "stock": 12,
+            "image_url": "tool3.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 144,
+            "name": "Torque Wrench",
+            "price": 3000.0,
+            "barcode": "TOL004",
+            "stock": 10,
+            "image_url": "tool4.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 145,
+            "name": "Screwdriver Set",
+            "price": 800.0,
+            "barcode": "TOL005",
+            "stock": 30,
+            "image_url": "tool5.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 146,
+            "name": "Pliers Set",
+            "price": 900.0,
+            "barcode": "TOL006",
+            "stock": 25,
+            "image_url": "tool6.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 147,
+            "name": "Impact Wrench",
+            "price": 5000.0,
+            "barcode": "TOL007",
+            "stock": 8,
+            "image_url": "tool7.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 148,
+            "name": "Air Compressor",
+            "price": 7000.0,
+            "barcode": "TOL008",
+            "stock": 5,
+            "image_url": "tool8.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 149,
+            "name": "Oil Drain Pan",
+            "price": 600.0,
+            "barcode": "TOL009",
+            "stock": 35,
+            "image_url": "tool9.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 150,
+            "name": "Workbench",
+            "price": 8000.0,
+            "barcode": "TOL010",
+            "stock": 3,
+            "image_url": "tool10.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 151,
+            "name": "Toolbox",
+            "price": 1500.0,
+            "barcode": "TOL011",
+            "stock": 20,
+            "image_url": "tool11.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 152,
+            "name": "Wheel Chock",
+            "price": 400.0,
+            "barcode": "TOL012",
+            "stock": 40,
+            "image_url": "tool12.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 153,
+            "name": "Battery Tester",
+            "price": 1200.0,
+            "barcode": "TOL013",
+            "stock": 15,
+            "image_url": "tool13.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 154,
+            "name": "OBD Scanner",
+            "price": 3500.0,
+            "barcode": "TOL014",
+            "stock": 10,
+            "image_url": "tool14.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 155,
+            "name": "Grease Gun",
+            "price": 700.0,
+            "barcode": "TOL015",
+            "stock": 25,
+            "image_url": "tool15.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 156,
+            "name": "Creeper",
+            "price": 2000.0,
+            "barcode": "TOL016",
+            "stock": 12,
+            "image_url": "tool16.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 157,
+            "name": "Car Lift",
+            "price": 15000.0,
+            "barcode": "TOL017",
+            "stock": 2,
+            "image_url": "tool17.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 158,
+            "name": "Drill Machine",
+            "price": 2500.0,
+            "barcode": "TOL018",
+            "stock": 15,
+            "image_url": "tool18.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 159,
+            "name": "Angle Grinder",
+            "price": 1800.0,
+            "barcode": "TOL019",
+            "stock": 18,
+            "image_url": "tool19.jpg",
+            "category_id": 8
+        },
+        {
+            "id": 160,
+            "name": "Measuring Tape",
+            "price": 300.0,
+            "barcode": "TOL020",
+            "stock": 50,
+            "image_url": "tool20.jpg",
+            "category_id": 8
+        }
+    ],
+    "users": [
+        {
+            "id": 2,
+            "name": "Admin User",
+            "username": "admin",
+            "password": "scrypt:32768:8:1$m1wKH8vvVfGLsh7u$9a0548e05fca13fa3409e7b314c3f84eb63e0feb6c7a1422c210780df4c7b42d265b56f20e8b3808abda309f8252cc1374b3441493c7e20a6201d841cb4d3599",
+            "role": ""
+        }
+    ],
+    "sales": []
+}
