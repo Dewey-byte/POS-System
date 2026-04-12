@@ -22,6 +22,8 @@ def create_app():
     from routes.sales_routes import sales_bp
     from routes.test_route import test_bp
     from routes.upload_bp import upload_bp
+    from routes.customer_routes import  customer_bp    
+    
 
     app.register_blueprint(user_bp, url_prefix="/api/users")
     app.register_blueprint(product_bp, url_prefix="/api/products")
@@ -34,6 +36,9 @@ def create_app():
     from models import product
     from models import sales
     from models import user 
+    from models import Customer
+    from models import Motorcycle
+    from models import ServiceHistory
 
     # Seed CLI
     from app.seed import seed_cli

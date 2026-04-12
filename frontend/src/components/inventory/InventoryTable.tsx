@@ -25,7 +25,12 @@ interface Product {
   image?: string;
 }
 
-export function InventoryTable() {
+// Add props interface
+interface InventoryTableProps {
+  searchQuery: string;
+}
+
+export function InventoryTable({ searchQuery }: InventoryTableProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -89,7 +94,7 @@ export function InventoryTable() {
           barcode: editProduct.sku,
           price: editProduct.price,
           stock: editProduct.stock,
-          category_id: 1, // map your category properly or adjust backend
+          category_id: 1,
           image_url: editProduct.image,
         }),
       });
@@ -103,6 +108,13 @@ export function InventoryTable() {
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
+
+  // Filter products based on searchQuery
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.sku.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <>
@@ -120,7 +132,7 @@ export function InventoryTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((item) => {
+            {filteredProducts.map((item) => {
               const status = item.stock <= 5 ? 'low' : 'normal';
               return (
                 <TableRow key={item.id} className="border-border">
