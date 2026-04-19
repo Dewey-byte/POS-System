@@ -1,16 +1,18 @@
-import { useState } from 'react';
-import { Bike } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { useState } from "react";
+import { Bike } from "lucide-react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+
+type UserRole = "admin" | "cashier";
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (role: UserRole) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,29 +21,36 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true);
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/users/login ", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password
-        })
-      });
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/users/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+          }),
+        }
+      );
 
       const data = await response.json();
-
       if (response.ok) {
-        // Save token and user
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        onLogin(); // navigate to dashboard
+      const role = (data.user.role || "").toLowerCase();
+
+      if (role === "admin" || role === "cashier") {
+        onLogin(role);
+      } else {
+        alert("Unknown user role from server");
+      }
+
       } else {
         alert(data.message || "Invalid login");
       }
-
     } catch (error) {
       console.error("Login error:", error);
       alert("Server error. Please try again.");
@@ -85,34 +94,42 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
 
+            {/* Username */}
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-white">
+                Username
+              </Label>
 
               <Input
+              
                 id="username"
                 type="text"
                 placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="bg-input border-border focus:ring-primary"
+                className="bg-zinc-900 border border-zinc-700 focus:border-primary focus:ring-2 focus:ring-primary text-white placeholder:text-gray-400 pr-10 autofill:bg-zinc-900"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-white">
+                  Password
+                </Label>
 
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-input border-border focus:ring-primary"
-              />
-            </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className="w-full bg-zinc-900 border border-zinc-700 focus:border-primary focus:ring-2 focus:ring-primary text-white placeholder:text-gray-400"
+                />
+              </div>
 
+            {/* Login Button */}
             <Button
               type="submit"
               disabled={loading}
@@ -121,6 +138,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               {loading ? "Logging in..." : "Login"}
             </Button>
 
+            {/* Forgot Password */}
             <Button
               type="button"
               variant="ghost"
@@ -136,7 +154,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <p className="text-center text-muted-foreground mt-4">
           Use your registered account to login
         </p>
-
       </div>
     </div>
   );

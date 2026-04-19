@@ -46,8 +46,8 @@ def signup():
     new_user = User(
         name=name,
         username=username,
-        password=hashed_password,   # match DB column
-        role="user"
+        password=hashed_password,
+        role="cashier"   # default role set here
     )
 
     db.session.add(new_user)

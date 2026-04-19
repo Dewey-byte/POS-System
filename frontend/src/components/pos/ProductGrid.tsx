@@ -4,7 +4,7 @@ import { ProductCard } from "./ProductCard";
 import { debounce } from "lodash";
 
 interface Product {
-  id: string;
+  id: number;
   name: string;
   price: number;
   category: string;
@@ -16,18 +16,16 @@ interface Product {
 interface ProductGridProps {
   searchQuery: string;
   selectedCategory: string;
-  onAddToCart: (product: {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-  }) => void;
+  onAddToCart: (product: Product) => void;
+
+  refreshTrigger?: number; // 🔥 triggers reload after checkout
 }
 
 export function ProductGrid({
   searchQuery,
   selectedCategory,
   onAddToCart,
+  refreshTrigger,
 }: ProductGridProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
@@ -36,19 +34,35 @@ export function ProductGrid({
 
   const observerRef = useRef<HTMLDivElement | null>(null);
 
-  // 🔗 Fetch products once
+  // ✅ FETCH PRODUCTS (reusable)
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.get("http://127.0.0.1:5000/api/products");
+
+      setProducts(res.data);
+      setDisplayedProducts(res.data.slice(0, 20));
+      setPage(1);
+
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  // 🔄 Initial load
   useEffect(() => {
-    axios.get("http://127.0.0.1:5000/api/products")
-      .then((res) => {
-        setProducts(res.data);
-        setDisplayedProducts(res.data.slice(0, 20)); // initial load
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchProducts();
   }, []);
+
+  // 🔥 REFRESH AFTER CHECKOUT
+  useEffect(() => {
+    if (refreshTrigger !== undefined) {
+      fetchProducts();
+    }
+  }, [refreshTrigger]);
 
   // ⚡ Debounced filter
   const debouncedFilter = useRef(
@@ -73,7 +87,7 @@ export function ProductGrid({
     debouncedFilter(searchQuery, selectedCategory, products);
   }, [searchQuery, selectedCategory, products]);
 
-  // 🔄 Infinite Scroll Logic
+  // 🔄 Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
@@ -84,11 +98,10 @@ export function ProductGrid({
     if (observerRef.current) observer.observe(observerRef.current);
 
     return () => observer.disconnect();
-  }, [displayedProducts]);
+  }, [displayedProducts, searchQuery, selectedCategory, products]);
 
   const loadMore = () => {
     const nextPage = page + 1;
-    const start = 0;
     const end = nextPage * 20;
 
     const filtered = products.filter((product) => {
@@ -102,7 +115,7 @@ export function ProductGrid({
       return matchesSearch && matchesCategory;
     });
 
-    setDisplayedProducts(filtered.slice(start, end));
+    setDisplayedProducts(filtered.slice(0, end));
     setPage(nextPage);
   };
 
@@ -116,18 +129,18 @@ export function ProductGrid({
 
   return (
     <div className="h-full flex flex-col">
-      
-      {/* 📌 Sticky Category Header */}
+      {/* 📌 Header */}
       <div className="sticky top-0 bg-white z-10 p-2 border-b">
         <h2 className="font-semibold text-lg">
-          {selectedCategory === "all" ? "All Products" : selectedCategory}
+          {selectedCategory === "all"
+            ? "All Products"
+            : selectedCategory}
         </h2>
       </div>
 
-      {/* 🔥 Scrollable Grid */}
+      {/* 🔥 Grid */}
       <div className="flex-1 overflow-y-auto px-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          
           {displayedProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -146,9 +159,14 @@ export function ProductGrid({
           )}
         </div>
 
-        {/* 🔄 Infinite Scroll Trigger */}
-        <div ref={observerRef} className="h-10 flex items-center justify-center">
-          <span className="text-sm text-gray-400">Loading more...</span>
+        {/* 🔄 Scroll trigger */}
+        <div
+          ref={observerRef}
+          className="h-10 flex items-center justify-center"
+        >
+          <span className="text-sm text-gray-400">
+            Loading more...
+          </span>
         </div>
       </div>
     </div>

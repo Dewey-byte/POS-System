@@ -71,7 +71,7 @@ export function SalesReportPage({ onNavigate, onLogout }: SalesReportPageProps) 
 
   return (
     <div className="dark min-h-screen bg-background">
-      <Navbar onLogout={onLogout} />
+      <Navbar onLogout={onLogout} name={''} />
       <div className="flex">
         <Sidebar currentPage="sales" onNavigate={onNavigate} />
         

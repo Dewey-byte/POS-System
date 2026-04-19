@@ -39,7 +39,8 @@ def create_app():
     from models import Customer
     from models import Motorcycle
     from models import ServiceHistory
-
+    from models import Sale
+    from models import SaleItem
     # Seed CLI
     from app.seed import seed_cli
     seed_cli(app)

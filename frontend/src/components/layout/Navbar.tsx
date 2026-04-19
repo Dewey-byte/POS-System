@@ -3,9 +3,10 @@ import { Button } from "../ui/button";
 
 interface NavbarProps {
   onLogout: () => void;
+  name: string;
 }
 
-export function Navbar({ onLogout }: NavbarProps) {
+export function Navbar({ onLogout, name }: NavbarProps) {
   return (
     <div className="sticky top-0 z-50 bg-card border-b border-border px-6 py-4 flex items-center justify-between flex-none">
       <div className="flex items-center gap-3">
@@ -22,7 +23,7 @@ export function Navbar({ onLogout }: NavbarProps) {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-foreground">
           <User className="w-5 h-5" />
-          <span>Admin User</span>
+          <span>{name}</span>
         </div>
 
         <Button
