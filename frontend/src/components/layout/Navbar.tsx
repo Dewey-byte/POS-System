@@ -8,7 +8,7 @@ interface NavbarProps {
 
 export function Navbar({ onLogout, name }: NavbarProps) {
   return (
-    <div className="sticky top-0 z-50 bg-card border-b border-border px-6 py-4 flex items-center justify-between flex-none">
+    <div className="sticky top-0 z-50 bg-card border-b border-border px-6 py-4 flex items-center justify-between flex-none ">
       <div className="flex items-center gap-3">
         <div className="bg-primary/10 p-2 rounded-lg">
           <Bike className="w-6 h-6 text-primary" />

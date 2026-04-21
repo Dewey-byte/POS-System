@@ -35,13 +35,13 @@ export function DashboardPage({
   onLogout,
 }: DashboardPageProps) {
   return (
-    <div className="dark h-screen bg-background flex flex-col overflow-hidden">
+    <div className="dark h-screen bg-background flex flex-col ">
       
       {/* Sticky Navbar */}
       <Navbar onLogout={onLogout} name={""} />
 
       {/* Layout wrapper */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
 
         {/* Sticky Sidebar */}
         <Sidebar
