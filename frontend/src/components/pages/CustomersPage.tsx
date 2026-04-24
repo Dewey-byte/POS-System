@@ -148,20 +148,30 @@ export function CustomersPage({ onNavigate, onLogout }: CustomersPageProps) {
   };
 
   return (
-    <div className="dark min-h-screen bg-background">
+     <div className="dark h-screen bg-background flex flex-col ">
+
       <Navbar onLogout={onLogout} name={''} />
-      <div className="flex">
+
+       <div className="flex flex-1 overflow-hidden">
+
         <Sidebar currentPage="customers" onNavigate={onNavigate} />
 
-        <main className="flex-1 p-6 overflow-auto">
+         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
 
             {/* Page Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-foreground">Customer Management</h1>
-                <p className="text-muted-foreground mt-1">Manage customer profiles and service history</p>
-              </div>
+             <div className="p-6 border-b border-border bg-background sticky top-0 z-10">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-foreground">
+                Customer Management
+              </h1>
+
+              <p className="text-muted-foreground mt-1">
+                Manage customer profiles and service history
+              </p>
+            </div>
+          </div>
+           
 
               {/* Add Customer Dialog */}
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -220,7 +230,7 @@ export function CustomersPage({ onNavigate, onLogout }: CustomersPageProps) {
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
+            
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

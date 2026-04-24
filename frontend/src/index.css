@@ -3065,3 +3065,41 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
 }
+
+@media print {
+
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+
+  body {
+    width: 58mm;
+    margin: 0;
+    padding: 6px;
+  }
+
+  /* hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* show only receipt */
+  .receipt-container,
+  .receipt-container * {
+    visibility: visible;
+  }
+
+  .receipt-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    padding-bottom: 30px;
+  }
+
+  body, .receipt-container {
+  width: 58mm;
+  box-sizing: border-box;
+}
+}

@@ -154,12 +154,13 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
   };
 
   return (
-    <div className="dark min-h-screen bg-background">
-      <Navbar onLogout={onLogout} />
-      <div className="flex">
+    <div className="dark h-screen bg-background flex flex-col overflow-hidden">
+      <Navbar onLogout={onLogout} name={''} />
+      <div className="flex flex-1 overflow-hidden">
+        
         <Sidebar currentPage="mechanics" onNavigate={onNavigate} />
         
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Page Header */}
             <div className="flex items-center justify-between">
