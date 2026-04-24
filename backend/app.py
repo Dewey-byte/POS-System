@@ -26,6 +26,7 @@ def create_app():
     app.register_blueprint(test_bp, url_prefix="/api/test")
     app.register_blueprint(customer_bp, url_prefix="/api/customers")
     app.register_blueprint(upload_bp, url_prefix="/api/upload")
+    
 
     
 

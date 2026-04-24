@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 
 interface ReceiptItem {
@@ -33,18 +33,27 @@ export function ReceiptModal({
   sale,
   onClose,
 }: ReceiptModalProps) {
+  const hasPrinted = useRef(false);
+
   useEffect(() => {
-    if (!open || !sale) return;
+    if (!open || !sale) {
+      hasPrinted.current = false; // reset when modal closes
+      return;
+    }
 
     if (!window.electronAPI) {
       console.error("Electron API not available");
       return;
     }
 
+    // 🔥 prevent duplicate printing
+    if (hasPrinted.current) return;
+    hasPrinted.current = true;
+
     const timer = setTimeout(() => {
       console.log("Printing receipt...", sale);
       window.electronAPI?.printReceipt(sale);
-    }, 800);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [open, sale]);

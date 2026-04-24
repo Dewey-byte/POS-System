@@ -29,9 +29,9 @@ function printReceipt(sale) {
       setTimeout(() => {
         printWindow.webContents.print(
           {
-            silent: false, // ⚠️ CHANGE TO FALSE FOR TESTING FIRST
+            silent: true, // ⚠️ CHANGE TO FALSE FOR TESTING FIRST
             printBackground: true,
-            deviceName: "POS-58C",
+            deviceName: "POS",
           },
           (success, errorType) => {
             if (!success) {

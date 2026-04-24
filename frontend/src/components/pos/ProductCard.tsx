@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { Button } from "../ui/button";
@@ -20,17 +21,25 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
-  const isLowStock = product.stock > 0 && product.stock < 10;
+  const isLowStock = product.stock > 0 && product.stock < 5;
+
+  // ✅ image fallback state
+  const [imgSrc, setImgSrc] = useState(
+    product.image && product.image.trim()
+      ? product.image
+      : "/no-image.png"
+  );
 
   return (
     <Card className="bg-card border-border overflow-hidden hover:border-primary/50 transition-colors">
       
-      {/* IMAGE */}
-      <div className="aspect-square bg-secondary relative">
+      {/* IMAGE (uniform size) */}
+      <div className="w-full aspect-square bg-secondary relative overflow-hidden">
         <img
-          src={product.image}
+          src={imgSrc}
           alt={product.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
+          onError={() => setImgSrc("/no-image.png")}
         />
 
         {isOutOfStock && (
@@ -52,8 +61,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <h4 className="text-foreground mt-1">{product.name}</h4>
         <p className="text-primary mt-2">₱{product.price.toFixed(2)}</p>
 
-        {/* 🔥 LIVE STOCK DISPLAY */}
-        <p className={`mt-1 ${isOutOfStock ? "text-red-500" : "text-muted-foreground"}`}>
+        <p
+          className={`mt-1 ${
+            isOutOfStock ? "text-red-500" : "text-muted-foreground"
+          }`}
+        >
           Stock: {product.stock}
         </p>
       </CardContent>

@@ -123,36 +123,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
               </Card>
             </div>
 
-            {/* Preferences */}
-            <Card className="p-6">
-              <h3 className="mb-6">Preferences</h3>
-
-              <div className="space-y-6">
-                <div className="flex justify-between">
-                  <div className="flex gap-3">
-                    <Moon className="w-5 h-5" />
-                    <Label>Dark Mode</Label>
-                  </div>
-                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-                </div>
-
-                <div className="flex justify-between">
-                  <div className="flex gap-3">
-                    <Bell className="w-5 h-5" />
-                    <Label>Notifications</Label>
-                  </div>
-                  <Switch checked={notifications} onCheckedChange={setNotifications} />
-                </div>
-
-                <div className="flex justify-between">
-                  <div className="flex gap-3">
-                    <Mail className="w-5 h-5" />
-                    <Label>Email Alerts</Label>
-                  </div>
-                  <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
-                </div>
-              </div>
-            </Card>
+            
 
             {/* Users Table */}
             <Card className="p-6">

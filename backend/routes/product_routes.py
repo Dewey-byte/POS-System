@@ -99,3 +99,40 @@ def delete_product(product_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500 
+    
+    # POST checkout (decrease stock)
+@product_bp.route("/checkout", methods=["POST"])
+def checkout():
+    data = request.json
+    items = data.get("items", [])
+
+    if not items:
+        return jsonify({"error": "No items provided"}), 400
+
+    try:
+        for item in items:
+            product_id = item.get("product_id")
+            qty = item.get("quantity", 0)
+
+            if not product_id or qty <= 0:
+                return jsonify({"error": "Invalid item data"}), 400
+
+            product = Product.query.get(product_id)
+            if not product:
+                return jsonify({"error": f"Product {product_id} not found"}), 404
+
+            # ❗ Check stock availability
+            if product.stock < qty:
+                return jsonify({
+                    "error": f"Insufficient stock for {product.name}"
+                }), 400
+
+            # ✅ Decrease stock
+            product.stock -= qty
+
+        db.session.commit()
+        return jsonify({"message": "Checkout successful, stock updated"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

@@ -146,7 +146,7 @@ export function ProductGrid({
               key={product.id}
               product={{
                 ...product,
-                image: product.image || "/default-product.png",
+                image: product.image || "/no-image.png", // fallback image
               }}
               onAddToCart={onAddToCart}
             />
