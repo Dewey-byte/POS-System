@@ -164,9 +164,18 @@ def service_records():
         {
             "id": f"SRV-{record.id}",
             "date": record.date.strftime("%Y-%m-%d"),
+
             "customer": record.customer_name,
             "type": record.service_type,
             "mechanic": record.mechanic_name,
+
+            "brand": record.motorcycle_brand,
+            "model": record.motorcycle_model,
+            "plate": record.plate_number,
+
+            "parts": record.parts_used or [],
+            "labor": record.labor_cost or 0,
+
             "total": record.total,
             "status": record.status
         }

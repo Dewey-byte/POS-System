@@ -1,169 +1,324 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from '../layout/Navbar';
 import { Sidebar, Page } from '../layout/Sidebar';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { Badge } from '../ui/badge';
-import { User, Store, Bell, Moon, Users, Mail } from 'lucide-react';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '../ui/table';
 
 interface SettingsPageProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-const userAccounts = [
-  { id: 1, name: 'John Admin', email: 'john@motopos.com', role: 'Admin', status: 'Active' },
-  { id: 2, name: 'Sarah Manager', email: 'sarah@motopos.com', role: 'Manager', status: 'Active' },
-  { id: 3, name: 'Mike Cashier', email: 'mike@motopos.com', role: 'Cashier', status: 'Active' },
-  { id: 4, name: 'Lisa Sales', email: 'lisa@motopos.com', role: 'Cashier', status: 'Inactive' },
-];
+const API_URL = "http://127.0.0.1:5000/api/users";
 
 export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
-  const [darkMode, setDarkMode] = useState(true);
-  const [notifications, setNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(false);
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+
+  // EDIT USER
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editName, setEditName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+
+  // ADD USER
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  useEffect(() => {
+    const localUser = JSON.parse(localStorage.getItem("user") || "null");
+    setUser(localUser);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/users`)
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(err => console.log(err));
+  }, []);
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+
+    const res = await fetch(`${API_URL}/${editingUser.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: editName,
+        username: editUsername,
+        role: editRole,
+        password: editPassword || undefined
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    setUsers(prev =>
+      prev.map(u => u.id === editingUser.id ? data.user : u)
+    );
+
+    setEditingUser(null);
+  };
+
+  const handleAddUser = async () => {
+    const res = await fetch(`${API_URL}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newName,
+        username: newUsername,
+        password: newPassword
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    const refreshed = await fetch(`${API_URL}/users`).then(r => r.json());
+    setUsers(refreshed);
+
+    setShowAdd(false);
+    setNewName("");
+    setNewUsername("");
+    setNewPassword("");
+  };
 
   return (
-    <div className="dark h-screen bg-background flex flex-col ">
-      
-      {/* Navbar */}
+    <div className="dark min-h-screen bg-background flex flex-col">
+
       <Navbar onLogout={onLogout} name="Admin" />
 
-      {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* Sidebar */}
         <Sidebar currentPage="settings" onNavigate={onNavigate} />
-        
-        {/* Scrollable Content */}
-         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
 
-            {/* Page Header */}
-          <div className="p-6 border-b border-border bg-background  sticky top-0 z-10">
-            <div className="max-w-7xl mx-auto">
-              <h1 className="text-foreground">
-                Settings
-              </h1>
+        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-zinc-950">
 
-              <p className="text-muted-foreground mt-1">
-                 Manage your account and store preferences
-              </p>
-            </div>
-          </div>
-           
-      
-             
-            {/* Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-              {/* User Profile */}
-              <Card className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <User className="w-5 h-5 text-primary" />
-                  <h3>User Profile</h3>
-                </div>
+            {/* ================= HEADER (MATCHED TO INVENTORY) ================= */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-5">
 
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-20 h-20">
-                      <AvatarImage src="" />
-                      <AvatarFallback>JA</AvatarFallback>
-                    </Avatar>
-
-                    <Button variant="outline">
-                      Change Photo
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Full Name</Label>
-                    <Input defaultValue="John Admin" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input type="email" defaultValue="john@motopos.com" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input defaultValue="+1 (555) 123-4567" />
-                  </div>
-
-                  <Button className="w-full">
-                    Save Changes
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Store Info */}
-              <Card className="p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Store className="w-5 h-5 text-primary" />
-                  <h3>Store Information</h3>
-                </div>
-
-                <div className="space-y-4">
-                  <Input defaultValue="Moto Parts & Accessories" />
-                  <Input defaultValue="123 Main Street" />
-                  <Input defaultValue="+1 (555) 987-6543" />
-                  <Input type="email" defaultValue="info@motoparts.com" />
-                  <Input type="number" defaultValue="8.5" />
-
-                  <Button className="w-full">
-                    Update Store Info
-                  </Button>
-                </div>
-              </Card>
-            </div>
-
-            
-
-            {/* Users Table */}
-            <Card className="p-6">
-              <div className="flex justify-between mb-6">
-                <h3>User Accounts</h3>
-                <Button>Add User</Button>
+              <div>
+                <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                  Settings
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Manage user accounts
+                </p>
               </div>
 
-              <div className="overflow-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+              <div className="flex gap-3">
+
+
+                <Button
+                  onClick={() => setShowAdd(true)}
+                  className="bg-primary hover:bg-primary/90 rounded-xl px-4"
+                >
+                  + Add User
+                </Button>
+
+              </div>
+
+            </div>
+
+            {/* ================= TABLE CARD (MATCHED STYLE) ================= */}
+            <Card className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-2">
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Username</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {users.map((u) => (
+                    <TableRow key={u.id} className="hover:bg-white/5 transition">
+                      <TableCell>{u.name}</TableCell>
+                      <TableCell>{u.username}</TableCell>
+                      <TableCell>{u.role}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingUser(u);
+                            setEditName(u.name);
+                            setEditUsername(u.username);
+                            setEditRole(u.role);
+                            setEditPassword("");
+                          }}
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
+                  ))}
+                </TableBody>
 
-                  <TableBody>
-                    {userAccounts.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.role}</TableCell>
-                        <TableCell>{user.status}</TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="ghost">Edit</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              </Table>
+
             </Card>
 
           </div>
         </main>
       </div>
+
+      {/* ================= EDIT USER MODAL ================= */}
+      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
+        <DialogContent className="bg-card border-border">
+
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>
+              Update user information below.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Username</Label>
+              <Input
+                value={editUsername}
+                onChange={(e) => setEditUsername(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Input
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={editPassword}
+                onChange={(e) => setEditPassword(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingUser(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateUser} className="bg-primary hover:bg-primary/90">
+              Save Changes
+            </Button>
+          </DialogFooter>
+
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= ADD USER MODAL ================= */}
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="bg-card border-border">
+
+          <DialogHeader>
+            <DialogTitle>Add User</DialogTitle>
+            <DialogDescription>
+              Create a new user account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Username</Label>
+              <Input
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="bg-input border-border"
+              />
+            </div>
+
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddUser} className="bg-primary hover:bg-primary/90">
+              Create User
+            </Button>
+          </DialogFooter>
+
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

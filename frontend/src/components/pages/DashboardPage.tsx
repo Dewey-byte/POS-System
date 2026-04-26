@@ -22,7 +22,6 @@ type Page =
   | "sales"
   | "settings"
   | "services"
-  | "customers"
   | "mechanics";
 
 interface DashboardPageProps {
@@ -143,37 +142,7 @@ export function DashboardPage({
                   </CardContent>
                 </Card>
 
-                {/* Customers */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="w-5 h-5 text-primary" />
-                      Customers
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        Total Customers
-                      </span>
-                      <span>156</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        New This Month
-                      </span>
-                      <span>12</span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span>VIP Members</span>
-                      <Badge>24</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-
+              
                 {/* Mechanics */}
                 <Card>
                   <CardHeader className="pb-3">

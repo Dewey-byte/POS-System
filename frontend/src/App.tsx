@@ -6,7 +6,6 @@ import { InventoryPage } from './components/pages/InventoryPage';
 import { SalesReportPage } from './components/pages/SalesReportPage';
 import { SettingsPage } from './components/pages/SettingsPage';
 import { ServiceManagementPage } from './components/pages/ServiceManagementPage';
-import { CustomersPage } from './components/pages/CustomersPage';
 import { MechanicsPage } from './components/pages/MechanicsPage';
 import { Toaster } from './components/ui/sonner';
 
@@ -41,14 +40,14 @@ export default function App() {
       'sales',
       'settings',
       'services',
-      'customers',
+      
       'mechanics'
     ],
     cashier: [
       'dashboard',
       'pos',
       'services',
-      'customers',
+      
       'mechanics'
     ]
   };
@@ -157,19 +156,6 @@ export default function App() {
     return (
       <>
         <ServiceManagementPage
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
-        <Toaster />
-      </>
-    );
-  }
-
-
-  if (currentPage === 'customers') {
-    return (
-      <>
-        <CustomersPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
         />

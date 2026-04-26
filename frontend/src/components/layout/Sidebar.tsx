@@ -17,7 +17,6 @@ export type Page =
   | "sales"
   | "settings"
   | "services"
-  | "customers"
   | "mechanics";
 
 interface SidebarProps {
@@ -30,7 +29,6 @@ const menuItems = [
   { id: "pos" as Page, label: "Point of Sale", icon: ShoppingCart },
   { id: "services" as Page, label: "Service Management", icon: Wrench },
   { id: "inventory" as Page, label: "Inventory", icon: Package },
-  { id: "customers" as Page, label: "Customers", icon: Users },
   { id: "mechanics" as Page, label: "Mechanics", icon: UserCog },
   { id: "sales" as Page, label: "Reports", icon: TrendingUp },
   { id: "settings" as Page, label: "Settings", icon: Settings },

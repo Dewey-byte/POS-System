@@ -176,91 +176,55 @@ export function SalesReportPage({
               </div>
 
           
+{/* DATE RANGE */}
 
-            {/* DATE RANGE */}
+<Card className="p-6">
 
-            <Card className="p-6">
+  <h3 className="mb-4">
+    Date Range
+  </h3>
 
-              <h3 className="mb-4">
-                Date Range
-              </h3>
+  <div className="flex gap-4 flex-wrap">
 
-              <div className="flex gap-4 flex-wrap">
+    {/* FROM DATE */}
+    <div className="flex items-center gap-2">
 
-                <Popover>
+      <CalendarIcon className="w-4 h-4" />
 
-                  <PopoverTrigger asChild>
+      <input
+        type="date"
+        value={dateFrom ? dateFrom.toISOString().split("T")[0] : ""}
+        onChange={(e) =>
+          setDateFrom(e.target.value ? new Date(e.target.value) : undefined)
+        }
+        className="border border-border rounded-md px-3 py-2 bg-card text-foreground"
+      />
 
-                    <Button variant="outline">
+    </div>
 
-                      <CalendarIcon className="w-4 h-4 mr-2" />
+    {/* TO DATE */}
+    <div className="flex items-center gap-2">
 
-                      {
-                        dateFrom
-                          ? formatDate(dateFrom)
-                          : 'From Date'
-                      }
+      <CalendarIcon className="w-4 h-4" />
 
-                    </Button>
+      <input
+        type="date"
+        value={dateTo ? dateTo.toISOString().split("T")[0] : ""}
+        onChange={(e) =>
+          setDateTo(e.target.value ? new Date(e.target.value) : undefined)
+        }
+        className="border border-border rounded-md px-3 py-2 bg-card text-foreground"
+      />
 
-                  </PopoverTrigger>
+    </div>
 
-                  <PopoverContent>
+    <Button onClick={applyDateFilter}>
+      Apply Filter
+    </Button>
 
-                    <Calendar
-                      mode="single"
-                      selected={dateFrom}
-                      onSelect={setDateFrom}
-                      initialFocus
-                    />
+  </div>
 
-                  </PopoverContent>
-
-                </Popover>
-
-
-                <Popover>
-
-                  <PopoverTrigger asChild>
-
-                    <Button variant="outline">
-
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-
-                      {
-                        dateTo
-                          ? formatDate(dateTo)
-                          : 'To Date'
-                      }
-
-                    </Button>
-
-                  </PopoverTrigger>
-
-                  <PopoverContent>
-
-                    <Calendar
-                      mode="single"
-                      selected={dateTo}
-                      onSelect={setDateTo}
-                      initialFocus
-                    />
-
-                  </PopoverContent>
-
-                </Popover>
-
-
-                <Button onClick={applyDateFilter}>
-
-                  Apply Filter
-
-                </Button>
-
-              </div>
-
-            </Card>
-
+</Card>
 
             {/* TABS */}
 

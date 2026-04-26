@@ -5,6 +5,65 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 user_bp = Blueprint("users", __name__)
 
+# GET ALL USERS
+@user_bp.route("/users", methods=["GET"])
+def get_users():
+    users = User.query.all()
+
+    return jsonify([
+        {
+            "id": u.id,
+            "name": u.name,
+            "username": u.username,
+            "role": u.role
+        }
+        for u in users
+    ])
+    
+    # UPDATE USER
+@user_bp.route("/users/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+    data = request.json
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    # Update fields if provided
+    name = data.get("name")
+    username = data.get("username")
+    password = data.get("password")
+    role = data.get("role")
+
+    if username:
+        # check if username already exists (exclude current user)
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user and existing_user.id != user.id:
+            return jsonify({"message": "Username already taken"}), 400
+        user.username = username
+
+    if name:
+        user.name = name
+
+    if role:
+        user.role = role
+
+    if password:
+        user.password = generate_password_hash(password)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "User updated successfully",
+        "user": {
+            "id": user.id,
+            "name": user.name,
+            "username": user.username,
+            "role": user.role
+        }
+    }), 200
+
 # LOGIN
 @user_bp.route("/login", methods=["POST"])
 def login():

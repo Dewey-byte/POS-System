@@ -1,7 +1,7 @@
 import { ShoppingCart, Plus, Package, FileText, Wrench, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'customers' | 'mechanics';
+type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'mechanics';
 
 interface QuickActionButtonsProps {
   onNavigate: (page: Page) => void;
@@ -26,14 +26,7 @@ export function QuickActionButtons({ onNavigate }: QuickActionButtonsProps) {
         <span>New Service</span>
       </Button>
 
-      <Button
-        onClick={() => onNavigate('customers')}
-        variant="outline"
-        className="h-24 border-border hover:bg-accent flex flex-col gap-2"
-      >
-        <Users className="w-6 h-6" />
-        <span>Customers</span>
-      </Button>
+      
 
       <Button
         variant="outline"

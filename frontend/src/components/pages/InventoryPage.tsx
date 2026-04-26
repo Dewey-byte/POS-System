@@ -29,7 +29,7 @@ export function InventoryPage({ onNavigate, onLogout }: { onNavigate: (page: Pag
 
   return (
     <div className="dark min-h-screen bg-background flex flex-col">
-      <Navbar onLogout={onLogout} />
+      <Navbar onLogout={onLogout} name={''} />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar currentPage="inventory" onNavigate={onNavigate} />
