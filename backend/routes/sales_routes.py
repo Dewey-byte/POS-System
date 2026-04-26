@@ -1,3 +1,5 @@
+import json
+
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func
 from datetime import datetime
@@ -152,32 +154,81 @@ def service_reports():
 ###########################################################
 # SERVICE RECORDS TABLE
 ###########################################################
+def normalize_status(status):
+    if not status:
+        return "pending"
+    return status.lower().replace(" ", "-")
 
 @sales_bp.route("/service-records", methods=["GET"])
 def service_records():
-
     records = ServiceRecord.query.order_by(
         ServiceRecord.date.desc()
     ).limit(20).all()
 
     return jsonify([
         {
-            "id": f"SRV-{record.id}",
-            "date": record.date.strftime("%Y-%m-%d"),
+            "id": f"SRV-{r.id}",
+            "date": r.date.strftime("%Y-%m-%d") if r.date else None,
 
-            "customer": record.customer_name,
-            "type": record.service_type,
-            "mechanic": record.mechanic_name,
+            "customer": r.customer_name,
+            "type": r.service_type,
+            "mechanic": r.mechanic_name,
 
-            "brand": record.motorcycle_brand,
-            "model": record.motorcycle_model,
-            "plate": record.plate_number,
+            "brand": r.motorcycle_brand or "",
+            "model": r.motorcycle_model or "",
+            "plate": r.plate_number or "",
 
-            "parts": record.parts_used or [],
-            "labor": record.labor_cost or 0,
+            "parts": json.loads(r.parts_used) if r.parts_used else [],
+            "labor": float(r.labor_cost) if r.labor_cost else 0,
+            "total": float(r.total) if r.total else 0,
 
-            "total": record.total,
-            "status": record.status
+            # 🔥 FIXED STATUS
+            "status": normalize_status(r.status)
         }
-        for record in records
+        for r in records
     ])
+    
+
+@sales_bp.route("/service-records", methods=["POST"])
+def create_service_records():
+
+    data = request.json
+
+    # 🔥 if single object, convert to list
+    if isinstance(data, dict):
+        data = [data]
+
+    created_records = []
+
+    for item in data:
+
+        record = ServiceRecord(
+            customer_name=item.get("customer_name"),
+            service_type=item.get("service_type"),
+            motorcycle_brand=item.get("motorcycle_brand"),
+            motorcycle_model=item.get("motorcycle_model"),
+            plate_number=item.get("plate_number"),
+
+            parts_used=json.dumps(item.get("parts_used", [])),
+            labor_cost=item.get("labor_cost", 0),
+            mechanic_name=item.get("mechanic_name"),
+            total=item.get("total", 0),
+
+            status=(item.get("status") or "pending").lower().replace(" ", "-")
+        )
+
+        db.session.add(record)
+        created_records.append(record)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": f"{len(created_records)} records created",
+        "created": [
+            {
+                "id": f"SRV-{r.id}",
+                "status": r.status
+            }
+            for r in created_records
+        ]
+    }), 201
