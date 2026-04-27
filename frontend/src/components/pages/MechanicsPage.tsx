@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from 'sonner';
 import { Progress } from '../ui/progress';
 
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'customers' | 'mechanics';
+type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'mechanics';
 
 interface MechanicsPageProps {
   onNavigate: (page: Page) => void;
@@ -49,6 +49,10 @@ interface Mechanic {
 }
 
 export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
+
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const userRole = user?.role || "cashier"; // default to cashier if not found
+
   const [searchTerm, setSearchTerm] = useState('');
   const [mechanics, setMechanics] = useState<Mechanic[]>([]);
   const [selectedMechanic, setSelectedMechanic] = useState<Mechanic | null>(null);
@@ -163,13 +167,27 @@ const filteredMechanics = mechanics.filter(mechanic => {
   function setIsOpen(arg0: boolean): void {
     throw new Error('Function not implemented.');
   }
+  
+  /* =======================
+     ROLE ACCESS CONTROL
+  ======================= */
+  const canManageUsers = userRole === "admin";
+
+  if (userRole === "cashier") {
+    return (
+      <div className="p-10 text-red-500">
+        Access Denied. Please login.
+      </div>
+    );
+  }
+
 
   return (
     <div className="dark h-screen bg-background flex flex-col ">
-      <Navbar onLogout={onLogout} name={''} />
+      <Navbar onLogout={onLogout} role={user?.role || ""} name={''} />
        <div className="flex flex-1 overflow-hidden">
         
-        <Sidebar currentPage="mechanics" onNavigate={onNavigate} />
+       <Sidebar currentPage="mechanics" onNavigate={onNavigate} userRole={userRole} />
         
          <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">

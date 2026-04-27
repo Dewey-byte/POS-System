@@ -5,7 +5,6 @@ import {
   TrendingUp,
   Settings,
   Wrench,
-  Users,
   UserCog,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -19,11 +18,15 @@ export type Page =
   | "services"
   | "mechanics";
 
+export type UserRole = "cashier" | "admin";
+
 interface SidebarProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
+  userRole: UserRole; // ✅ REQUIRED
 }
 
+// All menu items
 const menuItems = [
   { id: "dashboard" as Page, label: "Dashboard", icon: LayoutDashboard },
   { id: "pos" as Page, label: "Point of Sale", icon: ShoppingCart },
@@ -34,11 +37,26 @@ const menuItems = [
   { id: "settings" as Page, label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
+export function Sidebar({
+  currentPage,
+  onNavigate,
+  userRole,
+}: SidebarProps) {
+  const cashierPages: Page[] = ["pos", "inventory", "services"];
+
+  const visibleItems = menuItems.filter((item) => {
+    if (userRole === "cashier") {
+      return cashierPages.includes(item.id);
+    }
+    return true;
+  });
+
+  console.log("USER ROLE:", userRole);
+
   return (
     <div className="w-64 sticky top-[73px] h-[calc(100vh-73px)] bg-sidebar border-r border-sidebar-border p-4">
       <nav className="space-y-2">
-        {menuItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id;
 

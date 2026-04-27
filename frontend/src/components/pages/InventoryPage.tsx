@@ -18,6 +18,9 @@ type Page =
   | 'mechanics';
 
 export function InventoryPage({ onNavigate, onLogout }: { onNavigate: (page: Page) => void; onLogout: () => void }) {
+const user = JSON.parse(localStorage.getItem("user") || "null");
+const userRole = user?.role || "cashier"; // default to cashier if not found
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshKey, setRefreshKey] = useState(0); // triggers table refresh
@@ -29,10 +32,10 @@ export function InventoryPage({ onNavigate, onLogout }: { onNavigate: (page: Pag
 
   return (
     <div className="dark min-h-screen bg-background flex flex-col">
-      <Navbar onLogout={onLogout} name={''} />
+      <Navbar onLogout={onLogout} role={user?.role || ""} name={user?.name || ""} />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar currentPage="inventory" onNavigate={onNavigate} />
+        <Sidebar currentPage="inventory" onNavigate={onNavigate} userRole={userRole} />
 
         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
           <div className="max-w-7xl mx-auto p-6 space-y-6">

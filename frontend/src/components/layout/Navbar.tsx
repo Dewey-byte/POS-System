@@ -4,11 +4,13 @@ import { Button } from "../ui/button";
 interface NavbarProps {
   onLogout: () => void;
   name: string;
+  role?: string; // ✅ added role
 }
 
-export function Navbar({ onLogout, name }: NavbarProps) {
+export function Navbar({ onLogout, name, role }: NavbarProps) {
   return (
     <div className="sticky top-0 z-50 bg-card border-b border-border px-6 py-4 flex items-center justify-between flex-none ">
+      
       <div className="flex items-center gap-3">
         <div className="bg-primary/10 p-2 rounded-lg">
           <Bike className="w-6 h-6 text-primary" />
@@ -21,9 +23,20 @@ export function Navbar({ onLogout, name }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-4">
+        
         <div className="flex items-center gap-2 text-foreground">
           <User className="w-5 h-5" />
-          <span>{name}</span>
+          
+          {/* ✅ UPDATED: show name + role */}
+          <div className="flex flex-col leading-tight">
+            <span>{name}</span>
+            {role && (
+              <span className="text-xs text-muted-foreground capitalize">
+                {role}
+              </span>
+            )}
+          </div>
+
         </div>
 
         <Button
@@ -36,6 +49,7 @@ export function Navbar({ onLogout, name }: NavbarProps) {
           Logout
         </Button>
       </div>
+
     </div>
   );
 }

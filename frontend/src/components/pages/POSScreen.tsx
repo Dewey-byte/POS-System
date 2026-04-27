@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navbar } from "../layout/Navbar";
-import { Sidebar, type Page } from "../layout/Sidebar";
+import { Sidebar, type Page, type UserRole } from "../layout/Sidebar";
 import { SearchBar } from "../pos/SearchBar";
 import { CategoryFilterTabs } from "../pos/CategoryFilterTabs";
 import { ProductGrid } from "../pos/ProductGrid";
@@ -9,6 +9,7 @@ import { CartSidebar } from "../pos/CartSidebar";
 interface POSScreenProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
+  userRole: UserRole; // ✅ FIXED
 }
 
 export interface CartItem {
@@ -22,12 +23,11 @@ export interface CartItem {
 export function POSScreen({
   onNavigate,
   onLogout,
+  userRole,
 }: POSScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<CartItem[]>([]);
-
-  // 🔥 NEW: triggers ProductGrid refresh after checkout
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   const addToCart = (product: {
@@ -45,15 +45,21 @@ export function POSScreen({
       if (existingItem) {
         return prev.map((item) =>
           item.id === productIdString
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
 
-      return [...prev, { id: productIdString, name: product.name, price: product.price, image: product.image, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          id: productIdString,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          quantity: 1,
+        },
+      ];
     });
   };
 
@@ -75,14 +81,18 @@ export function POSScreen({
     <div className="dark min-h-screen bg-background flex flex-col">
 
       {/* Navbar */}
-      <Navbar onLogout={onLogout} name={""} />
+      <Navbar onLogout={onLogout} role={userRole} name={""} />
 
       <div className="flex flex-1">
 
         {/* Sidebar */}
-        <Sidebar currentPage="pos" onNavigate={onNavigate} />
+        <Sidebar
+          currentPage="pos"
+          onNavigate={onNavigate}
+          userRole={userRole} // ✅ FIXED HERE
+        />
 
-        {/* MAIN AREA */}
+        {/* MAIN */}
         <main className="flex flex-1 h-[calc(100vh-73px)] overflow-hidden">
 
           {/* PRODUCTS */}
@@ -90,10 +100,8 @@ export function POSScreen({
             <div className="space-y-6 max-w-6xl">
 
               <div>
-                <h1 className="text-foreground">
-                  Point of Sale
-                </h1>
-                <p className="text-muted-foreground mt-1">
+                <h1>Point of Sale</h1>
+                <p className="text-muted-foreground">
                   Select products to add to cart
                 </p>
               </div>
@@ -108,14 +116,12 @@ export function POSScreen({
                 onSelect={setSelectedCategory}
               />
 
-              {/* 🔥 PASS refreshTrigger HERE */}
               <ProductGrid
                 searchQuery={searchQuery}
                 selectedCategory={selectedCategory}
                 onAddToCart={addToCart}
                 refreshTrigger={refreshTrigger ? 1 : 0}
               />
-
             </div>
           </div>
 
@@ -124,7 +130,7 @@ export function POSScreen({
             cart={cart}
             onUpdateQuantity={updateQuantity}
             onClearCart={clearCart}
-            setRefreshTrigger={setRefreshTrigger} // 🔥 ADD THIS
+            setRefreshTrigger={setRefreshTrigger}
           />
 
         </main>

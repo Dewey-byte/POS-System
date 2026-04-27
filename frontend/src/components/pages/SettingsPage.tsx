@@ -24,17 +24,24 @@ import {
   TableRow
 } from '../ui/table';
 
+import { UserRole } from "../layout/Sidebar";
+
+/* TYPES */
 interface SettingsPageProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
+  userRole: UserRole; // ✅ UPDATED (consistent role system)
 }
 
 const API_URL = "http://127.0.0.1:5000/api/users";
 
-export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
+export function SettingsPage({
+  onNavigate,
+  onLogout,
+  userRole,
+}: SettingsPageProps) {
 
   const [users, setUsers] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
 
   // EDIT USER
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -49,11 +56,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem("user") || "null");
-    setUser(localUser);
-  }, []);
-
+  /* FETCH USERS */
   useEffect(() => {
     fetch(`${API_URL}/users`)
       .then(res => res.json())
@@ -61,6 +64,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
       .catch(err => console.log(err));
   }, []);
 
+  /* UPDATE USER */
   const handleUpdateUser = async () => {
     if (!editingUser) return;
 
@@ -89,6 +93,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
     setEditingUser(null);
   };
 
+  /* ADD USER */
   const handleAddUser = async () => {
     const res = await fetch(`${API_URL}/signup`, {
       method: "POST",
@@ -116,23 +121,40 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
     setNewPassword("");
   };
 
+  /* =======================
+     ROLE ACCESS CONTROL
+  ======================= */
+  const canManageUsers = userRole === "admin";
+
+  if (userRole === "cashier") {
+    return (
+      <div className="p-10 text-red-500">
+        Access Denied. Please login.
+      </div>
+    );
+  }
+
   return (
     <div className="dark min-h-screen bg-background flex flex-col">
 
-      <Navbar onLogout={onLogout} name="Admin" />
+      <Navbar onLogout={onLogout} role={userRole || ""} name={""} />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar currentPage="settings" onNavigate={onNavigate} />
+        <Sidebar
+          currentPage="settings"
+          onNavigate={onNavigate}
+          userRole={userRole} // ✅ UPDATED
+        />
 
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-zinc-950">
 
           <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-            {/* ================= HEADER (MATCHED TO INVENTORY) ================= */}
+            {/* HEADER */}
             <div className="flex items-center justify-between border-b border-white/10 pb-5">
 
               <div>
-                <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
                   Settings
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -140,21 +162,18 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
                 </p>
               </div>
 
-              <div className="flex gap-3">
-
-
+              {canManageUsers && (
                 <Button
                   onClick={() => setShowAdd(true)}
                   className="bg-primary hover:bg-primary/90 rounded-xl px-4"
                 >
                   + Add User
                 </Button>
-
-              </div>
+              )}
 
             </div>
 
-            {/* ================= TABLE CARD (MATCHED STYLE) ================= */}
+            {/* TABLE */}
             <Card className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-2">
 
               <Table>
@@ -173,20 +192,23 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
                       <TableCell>{u.name}</TableCell>
                       <TableCell>{u.username}</TableCell>
                       <TableCell>{u.role}</TableCell>
+
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingUser(u);
-                            setEditName(u.name);
-                            setEditUsername(u.username);
-                            setEditRole(u.role);
-                            setEditPassword("");
-                          }}
-                        >
-                          Edit
-                        </Button>
+                        {canManageUsers && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingUser(u);
+                              setEditName(u.name);
+                              setEditUsername(u.username);
+                              setEditRole(u.role);
+                              setEditPassword("");
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -200,7 +222,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
         </main>
       </div>
 
-      {/* ================= EDIT USER MODAL ================= */}
+      {/* EDIT USER MODAL */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
         <DialogContent className="bg-card border-border">
 
@@ -215,29 +237,17 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
 
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="bg-input border-border"
-              />
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
 
             <div className="space-y-2">
               <Label>Username</Label>
-              <Input
-                value={editUsername}
-                onChange={(e) => setEditUsername(e.target.value)}
-                className="bg-input border-border"
-              />
+              <Input value={editUsername} onChange={(e) => setEditUsername(e.target.value)} />
             </div>
 
             <div className="space-y-2">
               <Label>Role</Label>
-              <Input
-                value={editRole}
-                onChange={(e) => setEditRole(e.target.value)}
-                className="bg-input border-border"
-              />
+              <Input value={editRole} onChange={(e) => setEditRole(e.target.value)} />
             </div>
 
             <div className="space-y-2">
@@ -246,7 +256,6 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
                 type="password"
                 value={editPassword}
                 onChange={(e) => setEditPassword(e.target.value)}
-                className="bg-input border-border"
               />
             </div>
 
@@ -256,7 +265,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
             <Button variant="outline" onClick={() => setEditingUser(null)}>
               Cancel
             </Button>
-            <Button onClick={handleUpdateUser} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleUpdateUser}>
               Save Changes
             </Button>
           </DialogFooter>
@@ -264,7 +273,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
         </DialogContent>
       </Dialog>
 
-      {/* ================= ADD USER MODAL ================= */}
+      {/* ADD USER MODAL */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="bg-card border-border">
 
@@ -279,20 +288,12 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
 
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="bg-input border-border"
-              />
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
             </div>
 
             <div className="space-y-2">
               <Label>Username</Label>
-              <Input
-                value={newUsername}
-                onChange={(e) => setNewUsername(e.target.value)}
-                className="bg-input border-border"
-              />
+              <Input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
             </div>
 
             <div className="space-y-2">
@@ -301,7 +302,6 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-input border-border"
               />
             </div>
 
@@ -311,7 +311,7 @@ export function SettingsPage({ onNavigate, onLogout }: SettingsPageProps) {
             <Button variant="outline" onClick={() => setShowAdd(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddUser} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleAddUser}>
               Create User
             </Button>
           </DialogFooter>

@@ -15,6 +15,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 
+type User = {
+  role: string;
+  name: string;
+};
+
 type Page =
   | "dashboard"
   | "pos"
@@ -25,28 +30,41 @@ type Page =
   | "mechanics";
 
 interface DashboardPageProps {
+  
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-export function DashboardPage({
-  onNavigate,
-  onLogout,
-}: DashboardPageProps) {
+export function DashboardPage({ onNavigate, onLogout }: { onNavigate: (page: Page) => void; onLogout: () => void }) {
+const user = JSON.parse(localStorage.getItem("user") || "null");
+const userRole = user?.role || "cashier"; // default to cashier if not found
+
+
+  /* =======================
+     ROLE ACCESS CONTROL
+  ======================= */
+  const canManageUsers = userRole === "admin";
+
+  if (userRole === "cashier") {
+    return (
+      <div className="p-10 text-red-500">
+        Access Denied. Please login.
+      </div>
+    );
+  }
+
+
+
   return (
     <div className="dark h-screen bg-background flex flex-col ">
       
       {/* Sticky Navbar */}
-      <Navbar onLogout={onLogout} name={""} />
-
+      <Navbar onLogout={onLogout} role={user?.role || ""} name={user?.name || ""} />
       {/* Layout wrapper */}
       <div className="flex flex-1 overflow-hidden">
 
         {/* Sticky Sidebar */}
-        <Sidebar
-          currentPage="dashboard"
-          onNavigate={onNavigate}
-        />
+       <Sidebar currentPage="dashboard" onNavigate={onNavigate} userRole={userRole} />
 
         {/* Scrollable Content Area */}
         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">

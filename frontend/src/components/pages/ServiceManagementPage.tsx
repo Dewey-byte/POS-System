@@ -69,6 +69,9 @@ export function ServiceManagementPage({
   onLogout
 }: Props) {
 
+const user = JSON.parse(localStorage.getItem("user") || "null");
+const userRole = user?.role || "cashier"; // default to cashier if not found
+
   const [serviceJobs, setServiceJobs] = useState<ServiceJob[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -227,15 +230,16 @@ export function ServiceManagementPage({
         return "";
     }
   };
+  
 
   return (
     <div className="dark min-h-screen bg-background flex flex-col">
 
-      <Navbar onLogout={onLogout} name="" />
+      <Navbar onLogout={onLogout} role={user?.role || ""} name={""} />
 
       <div className="flex flex-1 overflow-hidden">
 
-        <Sidebar currentPage="services" onNavigate={onNavigate} />
+       <Sidebar currentPage="sales" onNavigate={onNavigate} userRole={userRole} />
 
         <main className="flex-1 overflow-y-auto">
 
