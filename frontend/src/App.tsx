@@ -7,6 +7,7 @@ import { SalesReportPage } from "./components/pages/SalesReportPage";
 import { SettingsPage } from "./components/pages/SettingsPage";
 import { ServiceManagementPage } from "./components/pages/ServiceManagementPage";
 import { MechanicsPage } from "./components/pages/MechanicsPage";
+
 import { Toaster } from "./components/ui/sonner";
 
 type Page =
@@ -17,8 +18,8 @@ type Page =
   | "sales"
   | "settings"
   | "services"
-  | "mechanics";
-  
+  | "mechanics"
+  | "customers";
 
 type UserRole = "admin" | "cashier";
 
@@ -26,7 +27,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("login");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  // ✅ FIXED PERMISSIONS
   const rolePermissions: Record<UserRole, Page[]> = {
     admin: [
       "dashboard",
@@ -36,9 +36,9 @@ export default function App() {
       "settings",
       "services",
       "mechanics",
-     
+      "customers",
     ],
-    cashier: [ "pos", "inventory", "services"],
+    cashier: ["dashboard", "pos", "inventory", "services"],
   };
 
   // LOGIN
@@ -53,7 +53,7 @@ export default function App() {
     setCurrentPage("login");
   };
 
-  // NAVIGATION WITH PERMISSION CHECK
+  // NAVIGATION
   const handleNavigate = (page: Page) => {
     if (!userRole) return;
 
@@ -65,7 +65,7 @@ export default function App() {
     setCurrentPage(page);
   };
 
-  // LOGIN SCREEN
+  // ✅ LOGIN SCREEN FIRST
   if (currentPage === "login") {
     return (
       <>
@@ -75,6 +75,11 @@ export default function App() {
     );
   }
 
+  // ✅ GLOBAL SAFETY CHECK (IMPORTANT)
+  if (!userRole) {
+    return <div>Loading...</div>; // or null
+  }
+
   // DASHBOARD
   if (currentPage === "dashboard") {
     return (
@@ -82,7 +87,6 @@ export default function App() {
         <DashboardPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
-          userRole={userRole!}
         />
         <Toaster />
       </>
@@ -95,9 +99,7 @@ export default function App() {
       <>
         <POSScreen
           onNavigate={handleNavigate}
-          onLogout={handleLogout}
-          userRole={userRole!}
-        />
+          onLogout={handleLogout} userRole={"admin"}        />
         <Toaster />
       </>
     );
@@ -110,7 +112,6 @@ export default function App() {
         <InventoryPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
-          userRole={userRole!}
         />
         <Toaster />
       </>
@@ -124,7 +125,6 @@ export default function App() {
         <SalesReportPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
-          userRole={userRole!}
         />
         <Toaster />
       </>
@@ -137,9 +137,7 @@ export default function App() {
       <>
         <SettingsPage
           onNavigate={handleNavigate}
-          onLogout={handleLogout}
-          userRole={userRole!}
-        />
+          onLogout={handleLogout} userRole={"admin"}        />
         <Toaster />
       </>
     );
@@ -152,7 +150,6 @@ export default function App() {
         <ServiceManagementPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
-          userRole={userRole!}
         />
         <Toaster />
       </>
@@ -166,20 +163,18 @@ export default function App() {
         <MechanicsPage
           onNavigate={handleNavigate}
           onLogout={handleLogout}
-          userRole={userRole!}
         />
         <Toaster />
       </>
     );
   }
 
-  // fallback
+  // FALLBACK
   return (
     <>
       <DashboardPage
         onNavigate={handleNavigate}
         onLogout={handleLogout}
-        userRole={userRole!}
       />
       <Toaster />
     </>

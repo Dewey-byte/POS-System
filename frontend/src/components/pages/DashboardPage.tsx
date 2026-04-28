@@ -40,18 +40,7 @@ const user = JSON.parse(localStorage.getItem("user") || "null");
 const userRole = user?.role || "cashier"; // default to cashier if not found
 
 
-  /* =======================
-     ROLE ACCESS CONTROL
-  ======================= */
-  const canManageUsers = userRole === "admin";
 
-  if (userRole === "cashier") {
-    return (
-      <div className="p-10 text-red-500">
-        Access Denied. Please login.
-      </div>
-    );
-  }
 
 
 

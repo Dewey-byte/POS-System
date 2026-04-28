@@ -14,7 +14,6 @@ type Page =
   | 'sales'
   | 'settings'
   | 'services'
-  | 'customers'
   | 'mechanics';
 
 export function InventoryPage({ onNavigate, onLogout }: { onNavigate: (page: Page) => void; onLogout: () => void }) {

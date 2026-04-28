@@ -57,6 +57,52 @@ export function ProductGrid({
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+  let buffer = "";
+  let timeout: ReturnType<typeof setTimeout>;
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // reset timeout on each key
+    if (timeout) clearTimeout(timeout);
+
+    // Enter = scan complete
+    if (e.key === "Enter") {
+      if (buffer.length > 2) {
+        const scannedSku = buffer.trim();
+
+        const product = products.find(
+          (p) => p.sku === scannedSku
+        );
+
+        if (product) {
+          onAddToCart(product);
+        } else {
+          console.warn("Product not found for barcode:", scannedSku);
+        }
+      }
+
+      buffer = "";
+      return;
+    }
+
+    // only capture normal characters
+    if (e.key.length === 1) {
+      buffer += e.key;
+    }
+
+    // reset if typing stops (not scanner)
+    timeout = setTimeout(() => {
+      buffer = "";
+    }, 100);
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [products, onAddToCart]);
+
   // 🔥 REFRESH AFTER CHECKOUT
   useEffect(() => {
     if (refreshTrigger !== undefined) {

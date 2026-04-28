@@ -239,7 +239,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
       <div className="flex flex-1 overflow-hidden">
 
-       <Sidebar currentPage="sales" onNavigate={onNavigate} userRole={userRole} />
+       <Sidebar currentPage="services" onNavigate={onNavigate} userRole={userRole} />
 
         <main className="flex-1 overflow-y-auto">
 

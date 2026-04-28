@@ -20,11 +20,10 @@ export interface CartItem {
   image: string;
 }
 
-export function POSScreen({
-  onNavigate,
-  onLogout,
-  userRole,
-}: POSScreenProps) {
+export function POSScreen({ onNavigate, onLogout }: { onNavigate: (page: Page) => void; onLogout: () => void }) {
+const user = JSON.parse(localStorage.getItem("user") || "null");
+const userRole = user?.role || "cashier"; // default to cashier if not found
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<CartItem[]>([]);

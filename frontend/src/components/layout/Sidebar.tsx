@@ -42,7 +42,7 @@ export function Sidebar({
   onNavigate,
   userRole,
 }: SidebarProps) {
-  const cashierPages: Page[] = ["pos", "inventory", "services"];
+  const cashierPages: Page[] = ["dashboard", "pos", "inventory", "services"];
 
   const visibleItems = menuItems.filter((item) => {
     if (userRole === "cashier") {
