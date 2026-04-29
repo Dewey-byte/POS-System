@@ -6,6 +6,7 @@ import { AddProductModal } from '../inventory/AddProductModal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Plus, Download, Search } from 'lucide-react';
+import * as XLSX from "xlsx";
 
 type Page =
   | 'dashboard'
@@ -28,6 +29,35 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     // Increment refreshKey to re-fetch products
     setRefreshKey((prev) => prev + 1);
   };
+  const handleExport = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/products"); // 🔁 adjust if needed
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      alert("No data to export");
+      return;
+    }
+
+    // Convert JSON → worksheet
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
+
+    // Download file
+    XLSX.writeFile(workbook, "inventory.xlsx");
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Export failed. Check API connection.");
+  }
+};
 
   return (
     <div className="dark min-h-screen bg-background flex flex-col">
@@ -46,7 +76,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" className="border-border">
+                <Button variant="outline" className="border-border" onClick={handleExport}>
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>

@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Clock, Wrench, CheckCircle } from "lucide-react";
 
 import {
   Dialog,
@@ -26,6 +26,7 @@ import {
   TabsList,
   TabsTrigger
 } from "../ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
 
 /* TYPES */
 
@@ -74,6 +75,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
   const [serviceJobs, setServiceJobs] = useState<ServiceJob[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const [newJob, setNewJob] = useState<ServiceJob>({
@@ -199,22 +201,29 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
   /* FILTER (FIXED SAFE VERSION) */
 
-  const filteredJobs = serviceJobs.filter(job => {
-    const q = searchTerm.toLowerCase();
+  const filteredJobs = serviceJobs.filter((job) => {
+  const q = searchTerm.toLowerCase();
 
-    return (
-      (job.customerName ?? "").toLowerCase().includes(q) ||
-      (job.id ?? "").toLowerCase().includes(q)
-    );
-  });
+  const matchesSearch =
+    (job.customerName ?? "").toLowerCase().includes(q) ||
+    (job.id ?? "").toLowerCase().includes(q) ||
+    (job.motorcycleBrand ?? "").toLowerCase().includes(q) ||
+    (job.motorcycleModel ?? "").toLowerCase().includes(q) ||
+    (job.plateNumber ?? "").toLowerCase().includes(q);
 
-  const monitoringJobs = filteredJobs.filter(
-    j => j.status === "pending" || j.status === "in-progress"
-  );
+  const matchesStatus =
+    selectedStatus === "all" || job.status === selectedStatus;
 
-  const trackingJobs = filteredJobs.filter(
-    j => j.status === "completed" || j.status === "cancelled"
-  );
+  return matchesSearch && matchesStatus;
+});
+
+const monitoringJobs = filteredJobs.filter(
+  (j) => j.status === "pending" || j.status === "in-progress"
+);
+
+const trackingJobs = filteredJobs.filter(
+  (j) => j.status === "completed" || j.status === "cancelled"
+);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -233,7 +242,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
   
 
   return (
-    <div className="dark min-h-screen bg-background flex flex-col">
+     <div className="dark h-screen bg-background flex flex-col ">
 
       <Navbar onLogout={onLogout} role={user?.role || ""} name={""} />
 
@@ -241,7 +250,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
        <Sidebar currentPage="services" onNavigate={onNavigate} userRole={userRole} />
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
 
           <div className="max-w-7xl mx-auto p-6 space-y-6">
 
@@ -260,6 +269,30 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
             <div className="flex justify-between items-center">
 
              
+                 {/* STATS */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            <Card><CardContent className="p-6 flex justify-between">
+              <div><p>Pending</p><p>{monitoringJobs.filter(j=>j.status==="pending").length}</p></div>
+              <Clock className="text-yellow-500"/>
+            </CardContent></Card>
+
+            <Card><CardContent className="p-6 flex justify-between">
+              <div><p>In Progress</p><p>{monitoringJobs.filter(j=>j.status==="in-progress").length}</p></div>
+              <Wrench className="text-blue-500"/>
+            </CardContent></Card>
+
+            <Card><CardContent className="p-6 flex justify-between">
+              <div><p>Completed</p><p>{trackingJobs.filter(j=>j.status==="completed").length}</p></div>
+              <CheckCircle className="text-green-500"/>
+            </CardContent></Card>
+
+            <Card><CardContent className="p-6 flex justify-between">
+              <div><p>Total Jobs</p><p>{serviceJobs.length}</p></div>
+              <Plus className="text-orange-500"/>
+            </CardContent></Card>
+
+          </div>
 
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
 
@@ -270,10 +303,13 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
                   </Button>
                 </DialogTrigger>
 
+
         <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto p-0 border-none">
   <DialogHeader>
     <DialogTitle className="text-xl font-bold">Create New Service Job</DialogTitle>
   </DialogHeader>
+
+  
 
   <div className="space-y-6 py-4">
     {/* CUSTOMER & PHONE */}
@@ -498,17 +534,39 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
             </div>
 
-            {/* SEARCH */}
-            <Card>
-              <CardContent className="p-4 flex gap-4">
-                <Search />
-                <Input
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Search jobs..."
-                />
-              </CardContent>
-            </Card>
+         <Card className="bg-card border-border">
+  <CardContent className="p-4">
+    <div className="flex flex-col md:flex-row gap-3 md:items-center">
+
+      {/* SEARCH */}
+      <div className="flex-1 relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"  />
+        <Input
+          placeholder="Search job ID, customer, brand, model, or plate..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full h-10 rounded-md border px-3 bg-background text-sm"
+        />
+      </div>
+
+      {/* STATUS FILTER */}
+      <div className="w-10 md:w-[220px]">
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="w-10 h-10 rounded-md border px-3 bg-background text-sm"
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
 
             {/* TABS */}
             <Tabs defaultValue="monitoring">

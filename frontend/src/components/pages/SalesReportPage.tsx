@@ -9,6 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Calendar as CalendarIcon, FileDown, FileSpreadsheet, ShoppingCart, Wrench } from 'lucide-react';
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type Page =
   | 'dashboard'
@@ -130,19 +133,63 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     fetchSalesReports();
 
   };
-  
-  /* =======================
-     ROLE ACCESS CONTROL
-  ======================= */
-  const canManageUsers = userRole === "admin";
 
-  if (userRole === "cashier") {
-    return (
-      <div className="p-10 text-red-500">
-        Access Denied. Please login.
-      </div>
-    );
-  }
+  const handleExportExcel = () => {
+  // SALES SHEET
+  const salesSheet = XLSX.utils.json_to_sheet(salesData);
+
+  // SERVICES SHEET
+  const serviceSheet = XLSX.utils.json_to_sheet(serviceRecords);
+
+  // WORKBOOK
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, salesSheet, "Sales Report");
+  XLSX.utils.book_append_sheet(workbook, serviceSheet, "Service Report");
+
+  XLSX.writeFile(workbook, "business_reports.xlsx");
+};
+ 
+const handleExportPDF = () => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("Business Reports", 14, 15);
+
+  // SALES TABLE
+  doc.setFontSize(12);
+  doc.text("Sales Transactions", 14, 25);
+
+  autoTable(doc, {
+    startY: 30,
+    head: [["ID", "Date", "Customer", "Items", "Total", "Payment"]],
+    body: transactions.map((t) => [
+      t.id,
+      t.date,
+      t.customer,
+      t.items,
+      `${t.total}`,
+      t.payment,
+    ]),
+  });
+
+  // SERVICES TABLE (below sales)
+  autoTable(doc, {
+    startY: (doc as any).lastAutoTable.finalY + 10,
+    head: [["ID", "Date", "Customer", "Type", "Mechanic", "Total", "Status"]],
+    body: serviceRecords.map((s) => [
+      s.id,
+      s.date,
+      s.customer,
+      s.type,
+      s.mechanic,
+      `${s.total}`,
+      s.status,
+    ]),
+  });
+
+  doc.save("business_reports.pdf");
+};
 
 
   ////////////////////////////////////////////////////////
@@ -154,11 +201,11 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
       <Navbar onLogout={onLogout} role={user?.role || ""} name={user?.name || ""} />
 
-      <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
 
         <Sidebar currentPage="sales" onNavigate={onNavigate} userRole={userRole} />
 
-       <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
+     <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
 
           <div className="max-w-7xl mx-auto space-y-6">
 
@@ -179,12 +226,12 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
               <div className="flex gap-3">
 
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleExportPDF}>
                   <FileDown className="w-4 h-4 mr-2" />
                   Export PDF
                 </Button>
 
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleExportExcel}>
                   <FileSpreadsheet className="w-4 h-4 mr-2" />
                   Export Excel
                 </Button>
