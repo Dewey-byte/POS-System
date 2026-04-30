@@ -99,7 +99,7 @@ export default function App() {
       <>
         <POSScreen
           onNavigate={handleNavigate}
-          onLogout={handleLogout} userRole={"admin"}        />
+          onLogout={handleLogout}         />
         <Toaster />
       </>
     );
