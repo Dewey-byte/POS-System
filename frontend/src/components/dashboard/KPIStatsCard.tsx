@@ -7,9 +7,17 @@ interface KPIStatsCardProps {
   change: string;
   trend: 'up' | 'down';
   icon: LucideIcon;
+  comparisonLabel?: string;
 }
 
-export function KPIStatsCard({ title, value, change, trend, icon: Icon }: KPIStatsCardProps) {
+export function KPIStatsCard({
+  title,
+  value,
+  change,
+  trend,
+  icon: Icon,
+  comparisonLabel,
+}: KPIStatsCardProps) {
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -20,19 +28,25 @@ export function KPIStatsCard({ title, value, change, trend, icon: Icon }: KPISta
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
         <div className="space-y-1">
           <h3 className="text-foreground">{value}</h3>
+
           <div className="flex items-center gap-1">
             {trend === 'up' ? (
               <TrendingUp className="w-4 h-4 text-green-500" />
             ) : (
               <TrendingDown className="w-4 h-4 text-red-500" />
             )}
+
             <span className={trend === 'up' ? 'text-green-500' : 'text-red-500'}>
               {change}
             </span>
-            <span className="text-muted-foreground">vs last week</span>
+
+            <span className="text-muted-foreground">
+              {comparisonLabel || "vs last period"}
+            </span>
           </div>
         </div>
       </CardContent>

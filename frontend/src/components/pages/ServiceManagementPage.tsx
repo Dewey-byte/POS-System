@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 
-import { Search, Plus, Clock, Wrench, CheckCircle } from "lucide-react";
+import { Search, Plus, Clock, Wrench, CheckCircle, FileText } from "lucide-react";
 
 import {
   Dialog,
@@ -37,7 +37,6 @@ type Page =
   | "sales"
   | "settings"
   | "services"
-  | "customers"
   | "mechanics";
 
 interface Props {
@@ -77,6 +76,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [mechanics, setMechanics] = useState<any[]>([]);
 
   const [newJob, setNewJob] = useState<ServiceJob>({
     id: "",
@@ -102,6 +102,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
   useEffect(() => {
     fetchJobs();
+    fetchMechanics();
   }, []);
 
   const fetchJobs = async () => {
@@ -131,6 +132,35 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     }
   };
 
+  const fetchMechanics = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/mechanics/");
+    setMechanics(res.data || []);
+  } catch (err) {
+    toast.error("Failed loading mechanics");
+  }
+};
+
+/* =========================
+   WORKLOAD CALCULATION (NEW)
+========================= */
+
+const mechanicWorkload = mechanics.map((m) => {
+  const jobCount = serviceJobs.filter(
+    (job) =>
+      job.assignedMechanic === m.name &&
+      job.status !== "completed" &&
+      job.status !== "cancelled"
+  ).length;
+
+  return {
+    ...m,
+    jobCount
+  };
+});
+
+  
+
   /* ADD PART */
 
   const addPart = () => {
@@ -148,7 +178,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     try {
       const payload = {
         customer_name: newJob.customerName,
-        service_type: newJob.serviceType[0],
+        service_type: newJob.serviceType.join(", "),
         motorcycle_brand: newJob.motorcycleBrand,
         motorcycle_model: newJob.motorcycleModel,
         plate_number: newJob.plateNumber,
@@ -193,6 +223,21 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
 
       toast.success("Service job created successfully");
       setIsAddDialogOpen(false);
+      
+        // RESET FORM
+          setNewJob({
+            id: "",
+            customerName: "",
+            motorcycleBrand: "",
+            motorcycleModel: "",
+            plateNumber: "",
+            serviceType: [],
+            assignedMechanic: "",
+            partsUsed: [],
+            laborCost: 0,
+            totalCost: 0,
+            status: "pending"
+          });
 
     } catch (err) {
       toast.error("Failed creating service job");
@@ -266,7 +311,9 @@ const trackingJobs = filteredJobs.filter(
               </p>
             </div>
           </div>
+          
             <div className="flex justify-between items-center">
+              
 
              
                  {/* STATS */}
@@ -289,7 +336,7 @@ const trackingJobs = filteredJobs.filter(
 
             <Card><CardContent className="p-6 flex justify-between">
               <div><p>Total Jobs</p><p>{serviceJobs.length}</p></div>
-              <Plus className="text-orange-500"/>
+               <FileText className="w-8 h-8 text-primary" />
             </CardContent></Card>
 
           </div>
@@ -393,14 +440,21 @@ const trackingJobs = filteredJobs.filter(
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Assign Mechanic</label>
-        <select
-          className="w-full h-10 border rounded-md px-3 bg-background"
-          onChange={(e) => setNewJob({ ...newJob, assignedMechanic: e.target.value })}
-        >
-          <option>Select mechanic</option>
-          <option>John Doe</option>
-          <option>Mike Santos</option>
-        </select>
+         <select
+                    className="w-full h-10 border rounded-md px-3 bg-background"
+                    value={newJob.assignedMechanic}
+                    onChange={(e) =>
+                      setNewJob({ ...newJob, assignedMechanic: e.target.value })
+                    }
+                  >
+                    <option value="">Select mechanic</option>
+
+                    {mechanicWorkload.map((m) => (
+                      <option key={m.id} value={m.name}>
+                        {m.name} ({m.jobCount} jobs)
+                      </option>
+                    ))}
+                  </select>
       </div>
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Service Description</label>
@@ -520,7 +574,25 @@ const trackingJobs = filteredJobs.filter(
   </div>
 
   {/* DIALOG FOOTER */}
+  {/* SAVE BUTTON (NEW) */}
+
+  
   <div className="flex justify-end gap-3 pt-4 border-t">
+
+    
+  <Button
+    onClick={createServiceJob}
+    disabled={
+      !newJob.customerName ||
+      !newJob.motorcycleBrand ||
+      !newJob.assignedMechanic ||
+      newJob.serviceType.length === 0
+    }
+    className="bg-green-600 hover:bg-green-700 text-white px-6"
+  >
+    Save Service
+  </Button>
+
     <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
       Cancel
     </Button>
@@ -545,7 +617,7 @@ const trackingJobs = filteredJobs.filter(
           placeholder="Search job ID, customer, brand, model, or plate..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full h-10 rounded-md border px-3 bg-background text-sm"
+          className="pl-10 bg-input border-border text-white"
         />
       </div>
 

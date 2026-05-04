@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 import { Navbar } from "../layout/Navbar";
 import { Sidebar } from "../layout/Sidebar";
 import { KPIStatsCard } from "../dashboard/KPIStatsCard";
 import { SalesChart } from "../dashboard/SalesChart";
 import { QuickActionButtons } from "../dashboard/QuickActionButtons";
+
 import {
   DollarSign,
   Package,
@@ -10,15 +14,12 @@ import {
   TrendingUp,
   Wrench,
   Clock,
-  Users,
 } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 
-type User = {
-  role: string;
-  name: string;
-};
+/* TYPES */
 
 type Page =
   | "dashboard"
@@ -30,52 +31,99 @@ type Page =
   | "mechanics";
 
 interface DashboardPageProps {
-  
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-export function DashboardPage({ onNavigate, onLogout }: { onNavigate: (page: Page) => void; onLogout: () => void }) {
-const user = JSON.parse(localStorage.getItem("user") || "null");
-const userRole = user?.role || "cashier"; // default to cashier if not found
+interface Mechanic {
+  id: string;
+  status: "available" | "busy" | "off-duty";
+}
 
+interface ServiceJob {
+  id: string;
+  status: "pending" | "in-progress" | "completed" | "cancelled";
+}
 
+export function DashboardPage({
+  onNavigate,
+  onLogout,
+}: DashboardPageProps) {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const userRole = user?.role || "cashier";
 
+  /* STATE */
+  const [mechanics, setMechanics] = useState<Mechanic[]>([]);
+  const [serviceJobs, setServiceJobs] = useState<ServiceJob[]>([]);
 
+  /* FETCH DATA */
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
+  const fetchDashboardData = async () => {
+    try {
+      const [mechanicsRes, servicesRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/mechanics/"),
+        axios.get("http://localhost:5000/api/sales/service-records"),
+      ]);
+
+      setMechanics(mechanicsRes.data || []);
+      setServiceJobs(servicesRes.data || []);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    }
+  };
+
+  /* STATS */
+
+const serviceStats = {
+  pending: serviceJobs.filter((j) => j.status === "pending").length,
+  inProgress: serviceJobs.filter((j) => j.status === "in-progress").length,
+  total:
+    serviceJobs.filter(
+      (j) => j.status === "pending" || j.status === "in-progress"
+    ).length,
+};
+
+  const mechanicStats = {
+    available: mechanics.filter((m) => m.status === "available").length,
+    busy: mechanics.filter((m) => m.status === "busy").length,
+    total: mechanics.length,
+  };
 
   return (
-    <div className="dark h-screen bg-background flex flex-col ">
-      
-      {/* Sticky Navbar */}
-      <Navbar onLogout={onLogout} role={user?.role || ""} name={user?.name || ""} />
-      {/* Layout wrapper */}
+    <div className="dark h-screen bg-background flex flex-col">
+      {/* NAVBAR */}
+      <Navbar
+        onLogout={onLogout}
+        role={user?.role || ""}
+        name={user?.name || ""}
+      />
+
       <div className="flex flex-1 overflow-hidden">
+        {/* SIDEBAR */}
+        <Sidebar
+          currentPage="dashboard"
+          onNavigate={onNavigate}
+          userRole={userRole}
+        />
 
-        {/* Sticky Sidebar */}
-       <Sidebar currentPage="dashboard" onNavigate={onNavigate} userRole={userRole} />
-
-        {/* Scrollable Content Area */}
+        {/* MAIN */}
         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
-
-          {/* Page Header */}
+          {/* HEADER */}
           <div className="p-6 border-b border-border bg-background sticky top-0 z-10">
             <div className="max-w-7xl mx-auto">
-              <h1 className="text-foreground">
-                Dashboard
-              </h1>
-
+              <h1 className="text-foreground">Dashboard</h1>
               <p className="text-muted-foreground mt-1">
                 Welcome back! Here's your business overview.
               </p>
             </div>
           </div>
 
-          {/* Scroll Content */}
           <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-
-              {/* KPI Cards */}
+              {/* KPI CARDS */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <KPIStatsCard
                   title="Sales Today"
@@ -110,15 +158,12 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
                 />
               </div>
 
-              {/* Quick Actions */}
-              <QuickActionButtons
-                onNavigate={onNavigate}
-              />
+              {/* QUICK ACTIONS */}
+              <QuickActionButtons onNavigate={onNavigate} />
 
-              {/* Service Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                {/* Services */}
+              {/* SERVICE + MECHANIC OVERVIEW */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* SERVICES */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2">
@@ -128,29 +173,32 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
                   </CardHeader>
 
                   <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        Pending
-                      </span>
-                      <span>2</span>
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-yellow-500" />
+                        <span className="text-sm text-muted-foreground">Pending</span>
+                      </div>
+
+                      <span>{serviceStats.pending}</span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        In Progress
-                      </span>
-                      <span>3</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Wrench className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-muted-foreground">In Progress</span>
+                      </div>
+
+                      <span>{serviceStats.inProgress}</span>
                     </div>
 
-                    <div className="flex justify-between">
-                      <span>Total Today</span>
-                      <Badge>5</Badge>
+                    <div className="flex items-center justify-between">
+                      <span >Total Today</span>
+                      <Badge className="bg-primary/20 text-primary border-primary/30">{serviceStats.total}</Badge>
                     </div>
                   </CardContent>
                 </Card>
 
-              
-                {/* Mechanics */}
+                {/* MECHANICS */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2">
@@ -164,31 +212,28 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
                       <span className="text-muted-foreground text-sm">
                         Available
                       </span>
-                      <Badge>5</Badge>
+                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">{mechanicStats.available}</Badge>
                     </div>
 
                     <div className="flex justify-between">
                       <span className="text-muted-foreground text-sm">
                         Busy
                       </span>
-                      <Badge>3</Badge>
+                      <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">{mechanicStats.busy}</Badge>
                     </div>
 
                     <div className="flex justify-between">
                       <span>Total Staff</span>
-                      <span>8</span>
+                      <span className="text-foreground">{mechanicStats.total}</span>
                     </div>
                   </CardContent>
                 </Card>
-
               </div>
 
-              {/* Chart */}
+              {/* SALES CHART */}
               <SalesChart />
-
             </div>
           </div>
-
         </main>
       </div>
     </div>

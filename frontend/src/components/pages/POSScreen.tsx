@@ -99,7 +99,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
             <div className="space-y-6 max-w-6xl">
 
               <div>
-                <h1>Point of Sale</h1>
+                <h1 className="text-foreground">Point of Sale</h1>
                 <p className="text-muted-foreground">
                   Select products to add to cart
                 </p>

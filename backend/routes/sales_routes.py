@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import func
 from datetime import datetime
 
+from models.mechanics import Mechanic
 from extensions import db
 from models.sales import Sale
 from models.sale_items import SaleItem
@@ -188,13 +189,11 @@ def service_records():
         for r in records
     ])
     
-
 @sales_bp.route("/service-records", methods=["POST"])
 def create_service_records():
 
     data = request.json
 
-    # 🔥 if single object, convert to list
     if isinstance(data, dict):
         data = [data]
 
@@ -208,16 +207,43 @@ def create_service_records():
             motorcycle_brand=item.get("motorcycle_brand"),
             motorcycle_model=item.get("motorcycle_model"),
             plate_number=item.get("plate_number"),
-
             parts_used=json.dumps(item.get("parts_used", [])),
             labor_cost=item.get("labor_cost", 0),
             mechanic_name=item.get("mechanic_name"),
             total=item.get("total", 0),
-
             status=(item.get("status") or "pending").lower().replace(" ", "-")
         )
 
         db.session.add(record)
+        db.session.flush()  # 🔥 get ID before commit
+
+        # =========================
+        # 🔥 UPDATE MECHANIC HERE
+        # =========================
+        if record.mechanic_name:
+
+            mechanic = Mechanic.query.filter_by(
+                name=record.mechanic_name
+            ).first()
+
+            if mechanic:
+                try:
+                    active_jobs = json.loads(mechanic.active_jobs or "[]")
+                except:
+                    active_jobs = []
+
+                # add new job
+                active_jobs.append({
+                    "id": f"SRV-{record.id}",
+                    "customerName": record.customer_name,
+                    "serviceType": record.service_type,
+                    "status": record.status
+                })
+
+                mechanic.active_jobs = json.dumps(active_jobs)
+                mechanic.current_jobs = (mechanic.current_jobs or 0) + 1
+                mechanic.status = "busy"
+
         created_records.append(record)
 
     db.session.commit()
@@ -232,3 +258,45 @@ def create_service_records():
             for r in created_records
         ]
     }), 201
+    
+    
+@sales_bp.route("/service-records/<int:id>/status", methods=["PUT"])
+def update_service_status(id):
+
+    data = request.json
+    new_status = data.get("status")
+
+    record = ServiceRecord.query.get_or_404(id)
+
+    record.status = new_status
+
+    # =========================
+    # 🔥 UPDATE MECHANIC
+    # =========================
+    mechanic = Mechanic.query.filter_by(
+        name=record.mechanic_name
+    ).first()
+
+    if mechanic:
+        try:
+            active_jobs = json.loads(mechanic.activeJobs or "[]")
+        except:
+            active_jobs = []
+
+        # remove job from active list
+        active_jobs = [
+            j for j in active_jobs
+            if j["id"] != f"SRV-{record.id}"
+        ]
+
+        mechanic.activeJobs = json.dumps(active_jobs)
+
+        mechanic.current_jobs = max(0, (mechanic.current_jobs or 0) - 1)
+        mechanic.completed_jobs = (mechanic.completed_jobs or 0) + 1
+
+        # if no more jobs → available
+        mechanic.status = "available" if mechanic.current_jobs == 0 else "busy"
+
+    db.session.commit()
+
+    return jsonify({"message": "Status updated"})

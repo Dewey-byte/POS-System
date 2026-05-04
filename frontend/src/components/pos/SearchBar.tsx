@@ -15,7 +15,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         placeholder="Search products by name or SKU..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 bg-input border-border"
+        className="pl-10 bg-input border-border text-white"
       />
     </div>
   );

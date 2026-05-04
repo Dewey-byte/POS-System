@@ -177,7 +177,7 @@ export function ProductGrid({
     <div className="h-full flex flex-col">
       {/* 📌 Header */}
       <div className="sticky top-0 bg-white z-10 p-2 border-b">
-        <h2 className="font-semibold text-lg">
+        <h2 className="font-semibold text-lg text-white">
           {selectedCategory === "all"
             ? "All Products"
             : selectedCategory}

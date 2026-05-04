@@ -31,7 +31,7 @@ export function Navbar({ onLogout, name, role }: NavbarProps) {
           <div className="flex flex-col leading-tight">
             <span>{name}</span>
             {role && (
-              <span className="text-xs text-muted-foreground capitalize">
+              <span className="text-xs text-muted-foreground capitalize font-bold">
                 {role}
               </span>
             )}

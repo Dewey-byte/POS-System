@@ -11,7 +11,13 @@ import {
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -25,12 +31,12 @@ interface Product {
   image?: string;
 }
 
-// Add props interface
 interface InventoryTableProps {
   searchQuery: string;
+  stockFilter: 'all' | 'low' | 'normal'; // ✅ added
 }
 
-export function InventoryTable({ searchQuery }: InventoryTableProps) {
+export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,7 +51,9 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
     try {
       const res = await fetch('http://127.0.0.1:5000/api/products/');
       if (!res.ok) throw new Error('Failed to fetch products');
+
       const data = await res.json();
+
       setProducts(
         data.map((p: any) => ({
           id: p.id,
@@ -66,11 +74,14 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
+
     try {
       const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`, {
         method: 'DELETE',
       });
+
       if (!res.ok) throw new Error('Failed to delete product');
+
       setProducts(products.filter((p) => p.id !== id));
     } catch (err: any) {
       alert(err.message || 'Failed to delete');
@@ -85,20 +96,26 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editProduct) return;
+
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/products/${editProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editProduct.name,
-          barcode: editProduct.sku,
-          price: editProduct.price,
-          stock: editProduct.stock,
-          category_id: 1,
-          image_url: editProduct.image,
-        }),
-      });
+      const res = await fetch(
+        `http://127.0.0.1:5000/api/products/${editProduct.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: editProduct.name,
+            barcode: editProduct.sku,
+            price: editProduct.price,
+            stock: editProduct.stock,
+            category_id: 1,
+            image_url: editProduct.image,
+          }),
+        }
+      );
+
       if (!res.ok) throw new Error('Failed to update product');
+
       setShowEditDialog(false);
       fetchProducts();
     } catch (err: any) {
@@ -109,12 +126,25 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
   if (loading) return <p>Loading products...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  // Filter products based on searchQuery
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // ✅ FULL FILTER LOGIC (search + stock)
+  const filteredProducts = products.filter((p) => {
+    const query = searchQuery.toLowerCase();
+
+    const matchesSearch =
+      p.name.toLowerCase().includes(query) ||
+      p.category.toLowerCase().includes(query) ||
+      p.sku.toLowerCase().includes(query);
+
+    let matchesStock = true;
+
+    if (stockFilter === 'low') {
+      matchesStock = p.stock <= 5; // 🔥 low stock rule
+    } else if (stockFilter === 'normal') {
+      matchesStock = p.stock > 5;
+    }
+
+    return matchesSearch && matchesStock;
+  });
 
   return (
     <>
@@ -131,38 +161,76 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {filteredProducts.map((item) => {
-              const status = item.stock <= 5 ? 'low' : 'normal';
-              return (
-                <TableRow key={item.id} className="border-border">
-                  <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                  <TableCell className="text-foreground">{item.name}</TableCell>
-                  <TableCell className="text-foreground">{item.category}</TableCell>
-                  <TableCell className="text-foreground">₱{item.price.toFixed(2)}</TableCell>
-                  <TableCell className="text-foreground">{item.stock}</TableCell>
-                  <TableCell>
-                    {status === 'low' ? (
-                      <Badge variant="destructive">Low Stock</Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                        Normal
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-primary" onClick={() => handleEdit(item)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {filteredProducts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
+                  No products found
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProducts.map((item) => {
+                const isLow = item.stock <= 5;
+
+                return (
+                  <TableRow
+                    key={item.id}
+                    className={`border-border ${isLow ? 'bg-red-900/20' : ''}`}
+                  >
+                    <TableCell className="text-muted-foreground">
+                      {item.sku}
+                    </TableCell>
+
+                    <TableCell className="text-foreground">
+                      {item.name}
+                    </TableCell>
+
+                    <TableCell className="text-foreground">
+                      {item.category}
+                    </TableCell>
+
+                    <TableCell className="text-foreground">
+                      ₱{item.price.toFixed(2)}
+                    </TableCell>
+
+                    <TableCell className="text-foreground">
+                      {item.stock}
+                    </TableCell>
+
+                    <TableCell>
+                      {isLow ? (
+                        <Badge variant="destructive">Low Stock</Badge>
+                      ) : (
+                        <Badge className="bg-green-500/10 text-green-500">
+                          Normal
+                        </Badge>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEdit(item)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </Card>
@@ -173,51 +241,59 @@ export function InventoryTable({ searchQuery }: InventoryTableProps) {
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
           </DialogHeader>
+
           {editProduct && (
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
+              <div>
+                <Label>Product Name</Label>
                 <Input
-                  id="name"
                   value={editProduct.name}
-                  onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
-                  required
+                  onChange={(e) =>
+                    setEditProduct({ ...editProduct, name: e.target.value })
+                  }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+
+              <div>
+                <Label>SKU</Label>
                 <Input
-                  id="sku"
                   value={editProduct.sku}
-                  onChange={(e) => setEditProduct({ ...editProduct, sku: e.target.value })}
-                  required
+                  onChange={(e) =>
+                    setEditProduct({ ...editProduct, sku: e.target.value })
+                  }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="price">Price</Label>
+
+              <div>
+                <Label>Price</Label>
                 <Input
-                  id="price"
                   type="number"
-                  step="0.01"
                   value={editProduct.price}
-                  onChange={(e) => setEditProduct({ ...editProduct, price: parseFloat(e.target.value) })}
-                  required
+                  onChange={(e) =>
+                    setEditProduct({
+                      ...editProduct,
+                      price: parseFloat(e.target.value),
+                    })
+                  }
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock">Stock</Label>
+
+              <div>
+                <Label>Stock</Label>
                 <Input
-                  id="stock"
                   type="number"
                   value={editProduct.stock}
-                  onChange={(e) => setEditProduct({ ...editProduct, stock: parseInt(e.target.value) })}
-                  required
+                  onChange={(e) =>
+                    setEditProduct({
+                      ...editProduct,
+                      stock: parseInt(e.target.value),
+                    })
+                  }
                 />
               </div>
+
               <DialogFooter>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
-                  Save Changes
-                </Button>
+                <Button type="submit">Save Changes</Button>
               </DialogFooter>
             </form>
           )}

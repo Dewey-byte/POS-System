@@ -1,7 +1,7 @@
 import { ShoppingCart, Plus, Package, FileText, Wrench, Users } from 'lucide-react';
 import { Button } from '../ui/button';
 
-type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'settings' | 'services' | 'mechanics';
+type Page = 'dashboard' | 'pos' | 'inventory' | 'sales' | 'services' ;
 
 interface QuickActionButtonsProps {
   onNavigate: (page: Page) => void;
@@ -9,10 +9,10 @@ interface QuickActionButtonsProps {
 
 export function QuickActionButtons({ onNavigate }: QuickActionButtonsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
       <Button
         onClick={() => onNavigate('pos')}
-        className="h-24 bg-primary hover:bg-primary/90 flex flex-col gap-2"
+        className="w-full h-24 bg-primary hover:bg-primary/90 flex flex-col gap-2"
       >
         <ShoppingCart className="w-6 h-6" />
         <span>New Sale</span>
@@ -20,21 +20,13 @@ export function QuickActionButtons({ onNavigate }: QuickActionButtonsProps) {
 
       <Button
         onClick={() => onNavigate('services')}
-        className="h-24 bg-blue-600 hover:bg-blue-700 flex flex-col gap-2"
+        className="w-full h-24 bg-blue-600 hover:bg-blue-700 flex flex-col gap-2"
       >
         <Wrench className="w-6 h-6" />
         <span>New Service</span>
       </Button>
 
-      
 
-      <Button
-        variant="outline"
-        className="h-24 border-border hover:bg-accent flex flex-col gap-2"
-      >
-        <Plus className="w-6 h-6" />
-        <span>Add Product</span>
-      </Button>
 
       <Button
         onClick={() => onNavigate('inventory')}

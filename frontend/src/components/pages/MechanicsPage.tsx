@@ -38,9 +38,9 @@ interface Mechanic {
   specialization: string;
   experience: number;
   status: 'available' | 'busy' | 'off-duty';
-  currentJobs: number;
-  completedJobs: number;
-  activeJobs: {
+  current_jobs: number;
+  completed_jobs: number;
+  active_jobs: {
     id: string;
     customerName: string;
     serviceType: string;
@@ -77,9 +77,9 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
       specialization: m?.specialization ?? '',
       experience: m?.experience ?? 0,
       status: m?.status ?? 'available',
-      currentJobs: m?.currentJobs ?? 0,
-      completedJobs: m?.completedJobs ?? 0,
-      activeJobs: m?.activeJobs ?? []
+      current_jobs: m?.current_jobs ?? 0,
+      completed_jobs: m?.completed_jobs ?? 0,
+      active_jobs: m?.active_jobs ?? []
     }));
 
       setMechanics(normalized);
@@ -113,10 +113,10 @@ const filteredMechanics = mechanics.filter(mechanic => {
 
         // keep UI compatible
         status: 'available',
-        currentJobs: 0,
-        completedJobs: 0,
+        current_jobs: 0,
+        completed_jobs: 0,
       
-        activeJobs: []
+        active_jobs: []
       };
 
       const res = await fetch('http://localhost:5000/api/mechanics/', {
@@ -130,9 +130,9 @@ const filteredMechanics = mechanics.filter(mechanic => {
       setMechanics(prev => [...prev, {
         ...data,
         status: data.status || 'available',
-        currentJobs: data.currentJobs || 0,
-        completedJobs: data.completedJobs || 0,    
-        activeJobs: data.activeJobs || []
+        current_jobs: data.current_jobs || 0,
+        completed_jobs: data.completed_jobs || 0,    
+        active_jobs: data.active_jobs || []
       }]);
 
       toast.success('Mechanic added successfully');
@@ -161,7 +161,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
     total: mechanics.length,
     available: mechanics.filter(m => m.status === 'available').length,
     busy: mechanics.filter(m => m.status === 'busy').length,
-    totalCompleted: mechanics.reduce((sum, m) => sum + m.completedJobs, 0)
+    totalCompleted: mechanics.reduce((sum, m) => sum + m.completed_jobs, 0)
   };
 
   function setIsOpen(arg0: boolean): void {
@@ -401,7 +401,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
                 Active Jobs
               </p>
               <p className="text-foreground">
-                {mechanic.currentJobs}
+                {mechanic.current_jobs}
               </p>
             </div>
 
@@ -410,7 +410,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
                 Completed
               </p>
               <p className="text-foreground">
-                {mechanic.completedJobs}
+                {mechanic.completed_jobs}
               </p>
             </div>
           </div>
@@ -491,24 +491,24 @@ const filteredMechanics = mechanics.filter(mechanic => {
                   <Card className="bg-card/50 border-border">
                     <CardContent className="p-4">
                       <p className="text-sm text-muted-foreground">Active Jobs</p>
-                      <p className="text-foreground">{selectedMechanic.currentJobs}</p>
+                      <p className="text-foreground">{selectedMechanic.current_jobs}</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-card/50 border-border">
                     <CardContent className="p-4">
                       <p className="text-sm text-muted-foreground">Completed Jobs</p>
-                      <p className="text-foreground">{selectedMechanic.completedJobs}</p>
+                      <p className="text-foreground">{selectedMechanic.completed_jobs}</p>
                     </CardContent>
                   </Card>
                 </div>
               </div>
 
               {/* Active Jobs */}
-              {selectedMechanic.activeJobs.length > 0 && (
+              {selectedMechanic.active_jobs.length > 0 && (
                 <div className="space-y-2">
                   <Label>Active Jobs</Label>
                   <div className="space-y-2">
-                    {selectedMechanic.activeJobs.map((job) => (
+                    {selectedMechanic.active_jobs.map((job) => (
                       <Card key={job.id} className="bg-card/50 border-border">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
