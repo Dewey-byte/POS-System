@@ -357,11 +357,19 @@ export function SettingsPage({
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Full Name</Label>
               <Input className="bg-black/20" value={editName} onChange={(e) => setEditName(e.target.value)} />
             </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Email
+                </Label>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Username</Label>
-              <Input className="bg-black/20" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} />
-            </div>
+                <Input
+                  className="bg-black/20"
+                  type="email"
+                  placeholder="e.g. janedoe@example.com"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                />
+              </div>
 
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Role</Label>
@@ -409,9 +417,18 @@ export function SettingsPage({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Username</Label>
-              <Input className="bg-black/20" placeholder="e.g. janedoe123" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
-            </div>
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Email
+                </Label>
+
+                <Input
+                  className="bg-black/20"
+                  type="email"
+                  placeholder="e.g. janedoe@example.com"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                />
+              </div>
 
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Password</Label>

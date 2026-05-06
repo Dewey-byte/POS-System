@@ -60,6 +60,7 @@ export function DashboardPage({
   useEffect(() => {
     fetchDashboardData();
   }, []);
+  
 
   const fetchDashboardData = async () => {
     try {
@@ -123,46 +124,45 @@ const serviceStats = {
 
           <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-              {/* KPI CARDS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPIStatsCard
-                  title="Sales Today"
-                  value="₱4,523.00"
-                  change="+12.5%"
-                  trend="up"
-                  icon={DollarSign}
-                />
-
-                <KPIStatsCard
-                  title="Items Sold"
-                  value="142"
-                  change="+8.2%"
-                  trend="up"
-                  icon={Package}
-                />
-
-                <KPIStatsCard
-                  title="Low Stock Items"
-                  value="8"
-                  change="+2"
-                  trend="down"
-                  icon={AlertTriangle}
-                />
-
-                <KPIStatsCard
-                  title="Revenue This Month"
-                  value="₱89,342.00"
-                  change="+18.7%"
-                  trend="up"
-                  icon={TrendingUp}
-                />
-              </div>
-
+             
               {/* QUICK ACTIONS */}
               <QuickActionButtons onNavigate={onNavigate} />
 
               {/* SERVICE + MECHANIC OVERVIEW */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {/* MECHANICS */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-primary" />
+                      Mechanics Status
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-sm">
+                        Available
+                      </span>
+                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">{mechanicStats.available}</Badge>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground text-sm">
+                        Busy
+                      </span>
+                      <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">{mechanicStats.busy}</Badge>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Total Staff</span>
+                      <span className="text-foreground">{mechanicStats.total}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                
                 {/* SERVICES */}
                 <Card>
                   <CardHeader className="pb-3">
@@ -198,36 +198,7 @@ const serviceStats = {
                   </CardContent>
                 </Card>
 
-                {/* MECHANICS */}
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2">
-                      <Wrench className="w-5 h-5 text-primary" />
-                      Mechanics Status
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        Available
-                      </span>
-                      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">{mechanicStats.available}</Badge>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground text-sm">
-                        Busy
-                      </span>
-                      <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">{mechanicStats.busy}</Badge>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span>Total Staff</span>
-                      <span className="text-foreground">{mechanicStats.total}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+               
               </div>
 
               {/* SALES CHART */}
