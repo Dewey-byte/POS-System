@@ -59,6 +59,16 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
+
+  // ✅ EDIT FORM STATE (FIX)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    specialization: '',
+    experience: 0,
+  });
+
   // ✅ FETCH FROM BACKEND
   useEffect(() => {
     fetchMechanics();
@@ -89,6 +99,71 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
     }
   };
 
+/* =========================
+     SYNC SELECTED MECHANIC
+  ========================= */
+  useEffect(() => {
+    if (selectedMechanic) {
+      setEditForm({
+        name: selectedMechanic.name || '',
+        phone: selectedMechanic.phone || '',
+        email: selectedMechanic.email || '',
+        specialization: selectedMechanic.specialization || '',
+        experience: selectedMechanic.experience || 0,
+      });
+    }
+  }, [selectedMechanic]);
+
+  /* =========================
+     INPUT CHANGE HANDLER
+  ========================= */
+  const handleChange = (e: { target: { name: any; value: any; }; }) => {
+    const { name, value } = e.target;
+
+    setEditForm(prev => ({
+      ...prev,
+      [name]: name === 'experience' ? Number(value) : value
+    }));
+  };
+
+  /* =========================
+     UPDATE MECHANIC
+  ========================= */
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/mechanics/${selectedMechanic?.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm),
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      const updated = await res.json();
+
+      setMechanics(prev =>
+        prev.map(m =>
+          m.id === selectedMechanic?.id ? { ...m, ...editForm } : m
+        )
+      );
+
+      toast.success('Mechanic updated successfully');
+      setIsDetailsDialogOpen(false);
+    } catch (error) {
+      toast.error('Failed to update mechanic');
+    }
+  };
+
+  const handleViewDetails = (mechanic: Mechanic) => {
+    setSelectedMechanic(mechanic);
+    setIsDetailsDialogOpen(true);
+  };
+
+
+
 const filteredMechanics = mechanics.filter(mechanic => {
   const name = mechanic?.name ?? '';
   const specialization = mechanic?.specialization ?? '';
@@ -101,7 +176,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
   );
 });
 
-  // ✅ ADD MECHANIC → BACKEND
+  //  ADD MECHANIC 
   const handleAddMechanic = async () => {
     try {
       const newMechanic = {
@@ -118,6 +193,8 @@ const filteredMechanics = mechanics.filter(mechanic => {
       
         active_jobs: []
       };
+      
+   
 
       const res = await fetch('http://localhost:5000/api/mechanics/', {
         method: 'POST',
@@ -143,11 +220,29 @@ const filteredMechanics = mechanics.filter(mechanic => {
     }
   };
 
-  const handleViewDetails = (mechanic: Mechanic) => {
-    setSelectedMechanic(mechanic);
-    setIsDetailsDialogOpen(true);
-  };
+     //  Delete Mechanic
 
+  const handleDeleteMechanic = async (id: string, name?: string) => {
+  try {
+    // ✅ confirm FIRST
+    if (!confirm(`Are you sure you want to delete ${name || 'this mechanic'}?`)) {
+      return;
+    }
+
+    const res = await fetch(`http://localhost:5000/api/mechanics/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) throw new Error();
+
+    setMechanics(prev => prev.filter(m => m.id !== id));
+
+    toast.success('Mechanic deleted successfully');
+  } catch (error) {
+    toast.error('Failed to delete mechanic');
+  }
+};
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available': return 'bg-green-500/20 text-green-500 border-green-500/30';
@@ -189,14 +284,10 @@ const filteredMechanics = mechanics.filter(mechanic => {
         
        <Sidebar currentPage="mechanics" onNavigate={onNavigate} userRole={userRole} />
         
-         <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <main className="flex-1 h-[calc(100vh-73px)] overflow-y-auto">
+          <div className="max-w-7xl mx-auto p-6 space-y-6">
 
-            {/* EVERYTHING BELOW IS UNCHANGED */}
-
-
-  
-            {/* Page Header */}
+            {/* Header */}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-foreground">Mechanic Management</h1>
@@ -210,9 +301,10 @@ const filteredMechanics = mechanics.filter(mechanic => {
                   </Button>
                 </DialogTrigger>
                 
-                   <DialogContent className="sm:max-w-2xl">
-        {/* Centered automatically by shadcn/radix */}
-        <DialogHeader>
+         <DialogContent className="p-0">
+        <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
+          <DialogHeader className="px-6 py-4">
+      
           <DialogTitle>Add New Mechanic</DialogTitle>
         </DialogHeader>
 
@@ -271,6 +363,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
           >
             Add Mechanic
           </Button>
+        </div>
         </div>
       </DialogContent>
 
@@ -415,15 +508,26 @@ const filteredMechanics = mechanics.filter(mechanic => {
             </div>
           </div>
         </div>
+          {/* Action */}
+          <div className="flex gap-2 pt-2">
 
-        {/* Action */}
-        <Button
-          onClick={() => handleViewDetails(mechanic)}
-          className="w-full bg-primary/10 hover:bg-primary/20 text-primary"
-          variant="outline"
-        >
-          View Details
-        </Button>
+            <Button
+              onClick={() => handleViewDetails(mechanic)}
+              className="flex-1 bg-primary/10 hover:bg-primary/20 text-primary"
+              variant="outline"
+            >
+              View Details
+            </Button>
+
+            <Button
+              onClick={() => handleDeleteMechanic(mechanic.id)}
+              className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-500"
+              variant="outline"
+            >
+              Delete
+            </Button>
+
+          </div>
       </CardContent>
     </Card>
   ))}
@@ -441,95 +545,175 @@ const filteredMechanics = mechanics.filter(mechanic => {
         </main>
       </div>
 
-      {/* Mechanic Details Dialog */}
-      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Mechanic Details</DialogTitle>
-          </DialogHeader>
-          {selectedMechanic && (
-            <div className="space-y-6">
-              {/* Basic Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Mechanic ID</Label>
-                  <p className="text-foreground">{selectedMechanic.id}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Full Name</Label>
-                  <p className="text-foreground">{selectedMechanic.name}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Phone Number</Label>
-                  <p className="text-foreground">{selectedMechanic.phone}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Email Address</Label>
-                  <p className="text-foreground">{selectedMechanic.email}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Specialization</Label>
-                  <p className="text-foreground">{selectedMechanic.specialization}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Experience</Label>
-                  <p className="text-foreground">{selectedMechanic.experience} years</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Badge className={getStatusColor(selectedMechanic.status)}>
-                    {selectedMechanic.status}
-                  </Badge>
-                </div>
+  {/* Mechanic Details Dialog */}
+<Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+  <DialogContent className="p-0">
+        <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
+          <DialogHeader className="px-6 py-4">
+        <DialogTitle>Edit Mechanic Details</DialogTitle>
+      </DialogHeader>
 
-              </div>
+      {selectedMechanic && (
+        <div className="space-y-6">
 
-              {/* Performance */}
+          {/* Basic Info */}
+          <div className="grid grid-cols-2 gap-4">
+
+            <div className="space-y-2">
+              <Label>Mechanic ID</Label>
+              <p className="text-foreground">{selectedMechanic.id}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input
+                name="name"
+                value={editForm.name}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Phone Number</Label>
+              <Input
+                name="phone"
+                value={editForm.phone}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input
+                name="email"
+                value={editForm.email}
+                onChange={handleChange}
+              />
+            </div>
+
+           {/* Specialization + Experience */}
+<div className="grid grid-cols-2 gap-4">
+
+  <div className="space-y-2">
+    <Label htmlFor="specialization">Specialization</Label>
+
+    <Select
+      value={editForm.specialization}
+      onValueChange={(value) =>
+        setEditForm((prev) => ({
+          ...prev,
+          specialization: value,
+        }))
+      }
+    >
+      <SelectTrigger id="specialization">
+        <SelectValue placeholder="Select specialization" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="engine">Engine Specialist</SelectItem>
+        <SelectItem value="brake">Brake & Suspension</SelectItem>
+        <SelectItem value="electrical">Electrical Systems</SelectItem>
+        <SelectItem value="general">General Maintenance</SelectItem>
+        <SelectItem value="bodywork">Bodywork & Paint</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  {/* Experience stays as input */}
+  <div className="space-y-2">
+    <Label htmlFor="experience">Years of Experience</Label>
+    <Input
+      id="experience"
+      type="number"
+      name="experience"
+      value={editForm.experience}
+      onChange={handleChange}
+    />
+  </div>
+
+</div>
+
+            <div className="space-y-2">
+              <Label>Experience (years)</Label>
+              <Input
+                type="number"
+                name="experience"
+                value={editForm.experience}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Badge className={getStatusColor(selectedMechanic.status)}>
+                {selectedMechanic.status}
+              </Badge>
+            </div>
+
+          </div>
+
+          {/* Performance (unchanged) */}
+          <div className="space-y-2">
+            <Label>Performance</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="bg-card/50 border-border">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Active Jobs</p>
+                  <p className="text-foreground">{selectedMechanic.current_jobs}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card/50 border-border">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground">Completed Jobs</p>
+                  <p className="text-foreground">{selectedMechanic.completed_jobs}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Active Jobs (unchanged) */}
+          {selectedMechanic.active_jobs.length > 0 && (
+            <div className="space-y-2">
+              <Label>Active Jobs</Label>
               <div className="space-y-2">
-                <Label>Performance</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="bg-card/50 border-border">
+                {selectedMechanic.active_jobs.map((job) => (
+                  <Card key={job.id} className="bg-card/50 border-border">
                     <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">Active Jobs</p>
-                      <p className="text-foreground">{selectedMechanic.current_jobs}</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-foreground">{job.serviceType}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {job.id} • {job.customerName}
+                          </p>
+                        </div>
+                        <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30">
+                          {job.status}
+                        </Badge>
+                      </div>
                     </CardContent>
                   </Card>
-                  <Card className="bg-card/50 border-border">
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">Completed Jobs</p>
-                      <p className="text-foreground">{selectedMechanic.completed_jobs}</p>
-                    </CardContent>
-                  </Card>
-                </div>
+                ))}
               </div>
-
-              {/* Active Jobs */}
-              {selectedMechanic.active_jobs.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Active Jobs</Label>
-                  <div className="space-y-2">
-                    {selectedMechanic.active_jobs.map((job) => (
-                      <Card key={job.id} className="bg-card/50 border-border">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-foreground">{job.serviceType}</p>
-                              <p className="text-sm text-muted-foreground">{job.id} • {job.customerName}</p>
-                            </div>
-                            <Badge className="bg-blue-500/20 text-blue-500 border-blue-500/30">
-                              {job.status}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+
+          {/* ACTION BUTTON */}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate}>
+              Save Changes
+            </Button>
+          </div>
+
+        </div>
+      )}
+    </div>
+  </DialogContent>
+</Dialog>
     </div>
   );
 }

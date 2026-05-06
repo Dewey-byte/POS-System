@@ -68,6 +68,37 @@ def create_mechanic():
 
     return jsonify({"message": "Mechanic created successfully"}), 201
 
+# UPDATE MECHANIC DETAILS
+@mechanics_bp.route("/<int:mech_id>", methods=["PUT"])
+def update_mechanic(mech_id):
+    data = request.json
+
+    mech = Mechanic.query.get(mech_id)
+
+    if not mech:
+        return jsonify({"error": "Mechanic not found"}), 404
+
+    # Update fields if provided, otherwise keep existing values
+    mech.name = data.get("name", mech.name)
+    mech.phone = data.get("phone", mech.phone)
+    mech.email = data.get("email", mech.email)
+    mech.specialization = data.get("specialization", mech.specialization)
+    mech.experience = data.get("experience", mech.experience)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Mechanic updated successfully",
+        "mechanic": {
+            "id": mech.id,
+            "name": mech.name,
+            "phone": mech.phone,
+            "email": mech.email,
+            "specialization": mech.specialization,
+            "experience": mech.experience
+        }
+    })
+
 
 # UPDATE STATUS
 @mechanics_bp.route("/<int:mech_id>/status", methods=["PUT"])
@@ -90,3 +121,16 @@ def change_status(mech_id):
             "status": mech.status
         }
     })
+    
+    # DELETE MECHANIC
+@mechanics_bp.route("/<int:mech_id>", methods=["DELETE"])
+def delete_mechanic(mech_id):
+    mech = Mechanic.query.get(mech_id)
+
+    if not mech:
+        return jsonify({"error": "Mechanic not found"}), 404
+
+    db.session.delete(mech)
+    db.session.commit()
+
+    return jsonify({"message": "Mechanic deleted successfully"})
