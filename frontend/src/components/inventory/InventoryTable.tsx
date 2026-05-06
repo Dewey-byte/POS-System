@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+"use client";
+
+import { useEffect, useState } from "react";
+import { Edit, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,19 +9,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+} from "../ui/table";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+} from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 interface Product {
   id: string;
@@ -33,13 +35,16 @@ interface Product {
 
 interface InventoryTableProps {
   searchQuery: string;
-  stockFilter: 'all' | 'low' | 'normal'; // ✅ added
+  stockFilter: "all" | "low" | "normal";
 }
 
-export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps) {
+export function InventoryTable({
+  searchQuery,
+  stockFilter,
+}: InventoryTableProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -49,8 +54,8 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/products/');
-      if (!res.ok) throw new Error('Failed to fetch products');
+      const res = await fetch("http://127.0.0.1:5000/api/products/");
+      if (!res.ok) throw new Error("Failed to fetch products");
 
       const data = await res.json();
 
@@ -62,29 +67,29 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
           category: p.category,
           price: p.price,
           stock: p.stock,
-          image: p.image || '',
+          image: p.image_url || "",
         }))
       );
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm("Delete this product?")) return;
 
     try {
       const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
-      if (!res.ok) throw new Error('Failed to delete product');
+      if (!res.ok) throw new Error("Failed to delete");
 
-      setProducts(products.filter((p) => p.id !== id));
+      setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err: any) {
-      alert(err.message || 'Failed to delete');
+      alert(err.message);
     }
   };
 
@@ -97,12 +102,22 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
     e.preventDefault();
     if (!editProduct) return;
 
+    // Image validation
+    if (
+      editProduct.image &&
+      !editProduct.image.startsWith("http") &&
+      editProduct.image !== ""
+    ) {
+      setError("Image URL must start with http/https");
+      return;
+    }
+
     try {
       const res = await fetch(
         `http://127.0.0.1:5000/api/products/${editProduct.id}`,
         {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: editProduct.name,
             barcode: editProduct.sku,
@@ -114,19 +129,18 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
         }
       );
 
-      if (!res.ok) throw new Error('Failed to update product');
+      if (!res.ok) throw new Error("Update failed");
 
       setShowEditDialog(false);
       fetchProducts();
     } catch (err: any) {
-      alert(err.message || 'Update failed');
+      alert(err.message);
     }
   };
 
-  if (loading) return <p>Loading products...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  // ✅ FULL FILTER LOGIC (search + stock)
   const filteredProducts = products.filter((p) => {
     const query = searchQuery.toLowerCase();
 
@@ -136,12 +150,8 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
       p.sku.toLowerCase().includes(query);
 
     let matchesStock = true;
-
-    if (stockFilter === 'low') {
-      matchesStock = p.stock <= 5; // 🔥 low stock rule
-    } else if (stockFilter === 'normal') {
-      matchesStock = p.stock > 5;
-    }
+    if (stockFilter === "low") matchesStock = p.stock <= 5;
+    if (stockFilter === "normal") matchesStock = p.stock > 5;
 
     return matchesSearch && matchesStock;
   });
@@ -151,9 +161,9 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
       <Card className="bg-card border-border">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent border-border">
+            <TableRow>
               <TableHead>SKU</TableHead>
-              <TableHead>Product Name</TableHead>
+              <TableHead>Product</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
@@ -163,140 +173,163 @@ export function InventoryTable({ searchQuery, stockFilter }: InventoryTableProps
           </TableHeader>
 
           <TableBody>
-            {filteredProducts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
-                  No products found
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredProducts.map((item) => {
-                const isLow = item.stock <= 5;
+            {filteredProducts.map((item) => {
+              const isLow = item.stock <= 5;
 
-                return (
-                  <TableRow
-                    key={item.id}
-                    className={`border-border ${isLow ? 'bg-red-900/20' : ''}`}
-                  >
-                    <TableCell className="text-muted-foreground">
-                      {item.sku}
-                    </TableCell>
+              return (
+                <TableRow key={item.id}>
+                  <TableCell>{item.sku}</TableCell>
 
-                    <TableCell className="text-foreground">
-                      {item.name}
-                    </TableCell>
+                  <TableCell className="flex items-center gap-3">
+                    {item.image && (
+                      <img
+                        src={item.image}
+                        className="w-10 h-10 rounded object-cover border"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "https://via.placeholder.com/40";
+                        }}
+                      />
+                    )}
+                    {item.name}
+                  </TableCell>
 
-                    <TableCell className="text-foreground">
-                      {item.category}
-                    </TableCell>
+                  <TableCell>{item.category}</TableCell>
+                  <TableCell>₱{item.price.toFixed(2)}</TableCell>
+                  <TableCell>{item.stock}</TableCell>
 
-                    <TableCell className="text-foreground">
-                      ₱{item.price.toFixed(2)}
-                    </TableCell>
+                  <TableCell>
+                    {isLow ? (
+                      <Badge variant="destructive">Low</Badge>
+                    ) : (
+                      <Badge className="bg-green-500/10 text-green-500">
+                        Normal
+                      </Badge>
+                    )}
+                  </TableCell>
 
-                    <TableCell className="text-foreground">
-                      {item.stock}
-                    </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
 
-                    <TableCell>
-                      {isLow ? (
-                        <Badge variant="destructive">Low Stock</Badge>
-                      ) : (
-                        <Badge className="bg-green-500/10 text-green-500">
-                          Normal
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEdit(item)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
 
-      {/* Edit Modal */}
+      {/* EDIT MODAL */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="p-0">
+          <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
+            <DialogHeader className="px-6 py-4">
+              <DialogTitle>Edit Product</DialogTitle>
+            </DialogHeader>
 
-          {editProduct && (
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <Label>Product Name</Label>
-                <Input
-                  value={editProduct.name}
-                  onChange={(e) =>
-                    setEditProduct({ ...editProduct, name: e.target.value })
-                  }
-                />
-              </div>
+            {editProduct && (
+              <form onSubmit={handleEditSubmit} className="space-y-4 px-6 pb-6">
+                <div className="space-y-2">
+                  <Label>Product Name</Label>
+                  <Input
+                    value={editProduct.name}
+                    onChange={(e) =>
+                      setEditProduct({
+                        ...editProduct,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-              <div>
-                <Label>SKU</Label>
-                <Input
-                  value={editProduct.sku}
-                  onChange={(e) =>
-                    setEditProduct({ ...editProduct, sku: e.target.value })
-                  }
-                />
-              </div>
+                <div>
+                  <Label>SKU</Label>
+                  <Input
+                    value={editProduct.sku}
+                    onChange={(e) =>
+                      setEditProduct({
+                        ...editProduct,
+                        sku: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-              <div>
-                <Label>Price</Label>
-                <Input
-                  type="number"
-                  value={editProduct.price}
-                  onChange={(e) =>
-                    setEditProduct({
-                      ...editProduct,
-                      price: parseFloat(e.target.value),
-                    })
-                  }
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Price</Label>
+                    <Input
+                      type="number"
+                      value={editProduct.price}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          price: parseFloat(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
 
-              <div>
-                <Label>Stock</Label>
-                <Input
-                  type="number"
-                  value={editProduct.stock}
-                  onChange={(e) =>
-                    setEditProduct({
-                      ...editProduct,
-                      stock: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
+                  <div>
+                    <Label>Stock</Label>
+                    <Input
+                      type="number"
+                      value={editProduct.stock}
+                      onChange={(e) =>
+                        setEditProduct({
+                          ...editProduct,
+                          stock: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
 
-              <DialogFooter>
-                <Button type="submit">Save Changes</Button>
-              </DialogFooter>
-            </form>
-          )}
+                {/* IMAGE */}
+                <div className="space-y-2">
+                  <Label>Image URL</Label>
+                  <Input
+                    placeholder="https://example.com/image.jpg"
+                    value={editProduct.image || ""}
+                    onChange={(e) =>
+                      setEditProduct({
+                        ...editProduct,
+                        image: e.target.value,
+                      })
+                    }
+                  />
+
+                  {editProduct.image && (
+                    <img
+                      src={editProduct.image}
+                      className="w-32 h-32 object-cover rounded-md border mt-2"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://via.placeholder.com/150?text=No+Image";
+                      }}
+                    />
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button type="submit">Save Changes</Button>
+                </DialogFooter>
+              </form>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>

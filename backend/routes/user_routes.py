@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 user_bp = Blueprint("users", __name__)
 
 # GET ALL USERS
-@user_bp.route("/users", methods=["GET"])
+@user_bp.route("/", methods=["GET"])
 def get_users():
     users = User.query.all()
 
@@ -21,7 +21,7 @@ def get_users():
     ])
     
     # UPDATE USER
-@user_bp.route("/users/<int:user_id>", methods=["PUT"])
+@user_bp.route("/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
     data = request.json
 
@@ -113,3 +113,20 @@ def signup():
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
+
+# DELETE USER
+@user_bp.route("/<int:user_id>", methods=["DELETE"])
+def delete_user(user_id):
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    # 🚫 Prevent deleting admin users
+    if user.role == "admin":
+        return jsonify({"message": "Admin users cannot be deleted"}), 403
+
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "User deleted successfully"}), 200

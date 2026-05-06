@@ -43,10 +43,9 @@ export function AddProductModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ REF FOR SKU INPUT
   const skuRef = useRef<HTMLInputElement>(null);
 
-  // ✅ AUTO FOCUS WHEN MODAL OPENS
+  // ✅ Auto focus on SKU when modal opens
   useEffect(() => {
     if (open) {
       setTimeout(() => {
@@ -55,11 +54,18 @@ export function AddProductModal({
     }
   }, [open]);
 
-  // ✅ SUBMIT
+  // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // ✅ Simple image URL validation
+    if (formData.image_url && !formData.image_url.startsWith("http")) {
+      setError("Please enter a valid image URL (must start with http/https)");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch("http://127.0.0.1:5000/api/products/", {
@@ -82,6 +88,7 @@ export function AddProductModal({
       if (!response.ok) {
         setError(data.error || "Failed to add product");
       } else {
+        // Reset form
         setFormData({
           name: "",
           sku: "",
@@ -106,7 +113,6 @@ export function AddProductModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0">
         <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
-
           <DialogHeader className="px-6 py-4">
             <DialogTitle>Add New Product</DialogTitle>
             <DialogDescription>
@@ -117,7 +123,7 @@ export function AddProductModal({
           <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
             {error && <p className="text-red-500">{error}</p>}
 
-            {/* ✅ SKU ONLY SCANNER FIELD */}
+            {/* SKU */}
             <div className="space-y-2">
               <Label htmlFor="sku">Scan Barcode / SKU</Label>
               <Input
@@ -135,7 +141,6 @@ export function AddProductModal({
                   }
                 }}
                 autoFocus
-                className="bg-input border-border"
                 required
               />
             </div>
@@ -206,17 +211,33 @@ export function AddProductModal({
               </div>
             </div>
 
-            {/* Image URL */}
+            {/* ✅ Image URL with Preview */}
             <div className="space-y-2">
               <Label>Image URL</Label>
               <Input
+                placeholder="https://example.com/image.jpg"
                 value={formData.image_url}
                 onChange={(e) =>
                   setFormData({ ...formData, image_url: e.target.value })
                 }
               />
+
+              {formData.image_url && (
+                <div className="mt-2">
+                  <img
+                    src={formData.image_url}
+                    alt="Preview"
+                    className="w-32 h-32 object-cover rounded-md border"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://via.placeholder.com/150?text=No+Image";
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
+            {/* Footer */}
             <DialogFooter>
               <Button
                 type="button"
