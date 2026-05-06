@@ -62,6 +62,11 @@ class ServiceRecord(db.Model):
         db.String(50),
         default="pending"
     )
+      # ✅ NEW FIELD
+    estimated_completion = db.Column(
+        db.DateTime,
+        nullable=True
+    )
 
     created_at = db.Column(
         db.DateTime,

@@ -178,11 +178,15 @@ def service_records():
             "brand": r.motorcycle_brand or "",
             "model": r.motorcycle_model or "",
             "plate": r.plate_number or "",
-
+             
             "parts": json.loads(r.parts_used) if r.parts_used else [],
             "labor": float(r.labor_cost) if r.labor_cost else 0,
             "total": float(r.total) if r.total else 0,
-
+           "estimated_completion": (
+                r.estimated_completion.strftime("%Y-%m-%d")
+                if hasattr(r.estimated_completion, "strftime")
+                else r.estimated_completion
+),
             # 🔥 FIXED STATUS
             "status": normalize_status(r.status)
         }
@@ -210,6 +214,7 @@ def create_service_records():
             parts_used=json.dumps(item.get("parts_used", [])),
             labor_cost=item.get("labor_cost", 0),
             mechanic_name=item.get("mechanic_name"),
+            estimated_completion=item.get("estimated_completion"),
             total=item.get("total", 0),
             status=(item.get("status") or "pending").lower().replace(" ", "-")
         )
@@ -260,41 +265,37 @@ def create_service_records():
     }), 201
     
     
-@sales_bp.route("/service-records/<int:id>/status", methods=["PUT"])
+@sales_bp.route("/service-records/<id>/status", methods=["PUT"])
 def update_service_status(id):
 
     data = request.json
-    new_status = data.get("status")
+    new_status = normalize_status(data.get("status"))
 
-    record = ServiceRecord.query.get_or_404(id)
+    real_id = int(id.replace("SRV-", ""))  # or remove if using numeric only
 
+    record = ServiceRecord.query.get_or_404(real_id)
     record.status = new_status
 
-    # =========================
-    # 🔥 UPDATE MECHANIC
-    # =========================
     mechanic = Mechanic.query.filter_by(
         name=record.mechanic_name
     ).first()
 
     if mechanic:
         try:
-            active_jobs = json.loads(mechanic.activeJobs or "[]")
+            active_jobs = json.loads(mechanic.active_jobs or "[]")
         except:
             active_jobs = []
 
-        # remove job from active list
         active_jobs = [
             j for j in active_jobs
             if j["id"] != f"SRV-{record.id}"
         ]
 
-        mechanic.activeJobs = json.dumps(active_jobs)
+        mechanic.active_jobs = json.dumps(active_jobs)
 
         mechanic.current_jobs = max(0, (mechanic.current_jobs or 0) - 1)
         mechanic.completed_jobs = (mechanic.completed_jobs or 0) + 1
 
-        # if no more jobs → available
         mechanic.status = "available" if mechanic.current_jobs == 0 else "busy"
 
     db.session.commit()
