@@ -7,7 +7,18 @@ import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 import { Calendar as CalendarIcon, FileDown, FileSpreadsheet, ShoppingCart, Wrench } from 'lucide-react';
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -34,8 +45,8 @@ export function SalesReportPage({
 
   const API_URL = "http://127.0.0.1:5000/api/sales";
 
-const user = JSON.parse(localStorage.getItem("user") || "null");
-const userRole = user?.role || "cashier"; // default to cashier if not found
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const userRole = user?.role || "cashier";
 
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
@@ -45,6 +56,25 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
   const [serviceData, setServiceData] = useState<any[]>([]);
   const [serviceRecords, setServiceRecords] = useState<any[]>([]);
 
+  //////////////////////////////////////////////////////
+  // DATE FILTER HELPER
+  //////////////////////////////////////////////////////
+
+  const isWithinRange = (dateStr: string) => {
+    if (!dateFrom && !dateTo) return true;
+
+    const date = new Date(dateStr);
+
+    if (dateFrom && date < dateFrom) return false;
+    if (dateTo && date > dateTo) return false;
+
+    return true;
+  };
+
+  const filteredTransactions = transactions.filter(t => isWithinRange(t.date));
+  const filteredServiceRecords = serviceRecords.filter(s => isWithinRange(s.date));
+  const filteredSalesData = salesData.filter(s => isWithinRange(s.date));
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -53,12 +83,11 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     });
   };
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // FETCH SALES REPORT DATA
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   const fetchSalesReports = async () => {
-
     let url = `${API_URL}/reports`;
 
     if (dateFrom && dateTo) {
@@ -69,101 +98,97 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     const data = await response.json();
 
     setSalesData(data);
-
   };
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // FETCH TRANSACTIONS
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   const fetchTransactions = async () => {
-
     const response = await fetch(`${API_URL}/transactions`);
     const data = await response.json();
 
     setTransactions(data);
-
   };
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // FETCH SERVICE REPORTS
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   const fetchServiceReports = async () => {
-
     const response = await fetch(`${API_URL}/service-reports`);
     const data = await response.json();
 
     setServiceData(data);
-
   };
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // FETCH SERVICE RECORDS
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   const fetchServiceRecords = async () => {
-
     const response = await fetch(`${API_URL}/service-records`);
     const data = await response.json();
 
     setServiceRecords(data);
-
   };
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // INITIAL LOAD
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   useEffect(() => {
-
     fetchSalesReports();
     fetchTransactions();
     fetchServiceReports();
     fetchServiceRecords();
-
   }, []);
 
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
   // DATE FILTER APPLY
-  ////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
 
   const applyDateFilter = () => {
-
     fetchSalesReports();
-
   };
 
+  //////////////////////////////////////////////////////
+  // ✅ FIXED EXPORT EXCEL (TABLE ONLY)
+  //////////////////////////////////////////////////////
+
   const handleExportExcel = () => {
-  // SALES SHEET
-  const salesSheet = XLSX.utils.json_to_sheet(salesData);
+    const workbook = XLSX.utils.book_new();
 
-  // SERVICES SHEET
-  const serviceSheet = XLSX.utils.json_to_sheet(serviceRecords);
+    const salesSheet = XLSX.utils.json_to_sheet(filteredTransactions);
+    const serviceSheet = XLSX.utils.json_to_sheet(filteredServiceRecords);
 
-  // WORKBOOK
-  const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, salesSheet, "Sales Table");
+    XLSX.utils.book_append_sheet(workbook, serviceSheet, "Service Table");
 
-  XLSX.utils.book_append_sheet(workbook, salesSheet, "Sales Report");
-  XLSX.utils.book_append_sheet(workbook, serviceSheet, "Service Report");
+    XLSX.writeFile(workbook, "business_reports.xlsx");
+  };
 
-  XLSX.writeFile(workbook, "business_reports.xlsx");
-};
- 
-const handleExportPDF = () => {
+  //////////////////////////////////////////////////////
+  // ✅ FIXED EXPORT PDF (TABLE ONLY)
+  //////////////////////////////////////////////////////
+
+ const handleExportPDF = () => {
   const doc = new jsPDF();
 
   doc.setFontSize(16);
   doc.text("Business Reports", 14, 15);
 
-  // SALES TABLE
+  //////////////////////////////////////////////////////
+  // SALES REPORT HEADER
+  //////////////////////////////////////////////////////
+
   doc.setFontSize(12);
-  doc.text("Sales Transactions", 14, 25);
+  doc.text("Sales Report", 14, 25);
 
   autoTable(doc, {
     startY: 30,
     head: [["ID", "Date", "Customer", "Items", "Total", "Payment"]],
-    body: transactions.map((t) => [
+    body: filteredTransactions.map((t) => [
       t.id,
       t.date,
       t.customer,
@@ -173,11 +198,19 @@ const handleExportPDF = () => {
     ]),
   });
 
-  // SERVICES TABLE (below sales)
+  //////////////////////////////////////////////////////
+  // SERVICE REPORT HEADER
+  //////////////////////////////////////////////////////
+
+  const nextY = (doc as any).lastAutoTable.finalY + 10;
+
+  doc.setFontSize(12);
+  doc.text("Service Report", 14, nextY);
+
   autoTable(doc, {
-    startY: (doc as any).lastAutoTable.finalY + 10,
+    startY: nextY + 5,
     head: [["ID", "Date", "Customer", "Type", "Mechanic", "Total", "Status"]],
-    body: serviceRecords.map((s) => [
+    body: filteredServiceRecords.map((s) => [
       s.id,
       s.date,
       s.customer,
@@ -190,8 +223,6 @@ const handleExportPDF = () => {
 
   doc.save("business_reports.pdf");
 };
-
-
   ////////////////////////////////////////////////////////
   // UI
   ////////////////////////////////////////////////////////
@@ -400,32 +431,32 @@ const handleExportPDF = () => {
                       <TableBody>
 
                         {
-                          transactions.map((txn) => (
+                         filteredTransactions.map(t => (
 
-                            <TableRow key={txn.id}>
+                            <TableRow key={t.id}>
 
                               <TableCell className="text-primary">
-                                {txn.id}
+                                {t.id}
                               </TableCell>
 
                               <TableCell>
-                                {txn.date}
+                                {t.date}
                               </TableCell>
 
                               <TableCell>
-                                {txn.customer}
+                                {t.customer}
                               </TableCell>
 
                               <TableCell>
-                                {txn.items}
+                                {t.items}
                               </TableCell>
 
                               <TableCell>
-                                ₱{txn.total.toFixed(2)}
+                                ₱{t.total.toFixed(2)}
                               </TableCell>
 
                               <TableCell>
-                                {txn.payment}
+                                {t.payment}
                               </TableCell>
 
                             </TableRow>
@@ -527,36 +558,36 @@ const handleExportPDF = () => {
                       <TableBody>
 
                         {
-                          serviceRecords.map((srv) => (
+                          filteredServiceRecords.map(s => (
 
-                            <TableRow key={srv.id}>
+                            <TableRow key={s.id}>
 
                               <TableCell className="text-primary">
-                                {srv.id}
+                                {s.id}
                               </TableCell>
 
                               <TableCell>
-                                {srv.date}
+                                {s.date}
                               </TableCell>
 
                               <TableCell>
-                                {srv.customer}
+                                {s.customer}
                               </TableCell>
 
                               <TableCell>
-                                {srv.type}
+                                {s.type}
                               </TableCell>
 
                               <TableCell>
-                                {srv.mechanic}
+                                {s.mechanic}
                               </TableCell>
 
                               <TableCell>
-                                ₱{srv.total.toFixed(2)}
+                                ₱{s.total.toFixed(2)}
                               </TableCell>
 
                               <TableCell>
-                                {srv.status}
+                                {s.status}
                               </TableCell>
 
                             </TableRow>
