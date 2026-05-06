@@ -455,8 +455,18 @@ export function SalesReportPage({
                                 ₱{t.total.toFixed(2)}
                               </TableCell>
 
-                              <TableCell>
-                                {t.payment}
+                             <TableCell className="flex items-center gap-2">
+                               
+
+                                <span
+                                  className={`px-2 py-1 rounded text-xs ${
+                                    t.payment === "Cash"
+                                      ? "bg-green-500/10 text-green-500"
+                                      : "bg-blue-500/10 text-blue-500"
+                                  }`}
+                                >
+                                  {t.payment}
+                                </span>
                               </TableCell>
 
                             </TableRow>
