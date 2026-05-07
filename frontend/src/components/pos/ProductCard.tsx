@@ -43,13 +43,13 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         />
 
         {isOutOfStock && (
-          <Badge className="absolute top-2 right-2 bg-red-600">
+          <Badge variant="destructive" className="absolute top-2 right-2">
             Out of Stock
           </Badge>
         )}
 
         {isLowStock && (
-          <Badge variant="destructive" className="absolute top-2 right-2">
+         <Badge className="absolute top-2 right-2 bg-yellow-500/20 text-yellow-500 ">
             Low Stock
           </Badge>
         )}

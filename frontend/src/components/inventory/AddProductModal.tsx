@@ -61,34 +61,49 @@ export function AddProductModal({
     setError("");
 
     // ✅ Simple image URL validation
-    if (formData.image_url && !formData.image_url.startsWith("http")) {
-      setError("Please enter a valid image URL (must start with http/https)");
+    if (
+      formData.image_url &&
+      !formData.image_url.startsWith("http")
+    ) {
+      setError(
+        "Please enter a valid image URL (must start with http/https)"
+      );
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/products/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          barcode: formData.sku,
-          category_id: formData.category,
-          price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
-          image_url: formData.image_url,
-        }),
-      });
+      // ✅ Build payload dynamically
+      const payload: any = {
+        name: formData.name,
+        barcode: formData.sku,
+        category_id: formData.category,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+      };
+
+      // ✅ Only include image_url if not empty
+      if (formData.image_url.trim() !== "") {
+        payload.image_url = formData.image_url;
+      }
+
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/products/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setError(data.error || "Failed to add product");
       } else {
-        // Reset form
+        // ✅ Reset form
         setFormData({
           name: "",
           sku: "",
@@ -115,29 +130,46 @@ export function AddProductModal({
         <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
           <DialogHeader className="px-6 py-4">
             <DialogTitle>Add New Product</DialogTitle>
+
             <DialogDescription>
               Scan barcode or enter product details.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
-            {error && <p className="text-red-500">{error}</p>}
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 px-6 pb-6"
+          >
+            {error && (
+              <p className="text-red-500 text-sm">{error}</p>
+            )}
 
             {/* SKU */}
             <div className="space-y-2">
-              <Label htmlFor="sku">Scan Barcode / SKU</Label>
+              <Label htmlFor="sku">
+                Scan Barcode / SKU
+              </Label>
+
               <Input
                 ref={skuRef}
                 id="sku"
                 placeholder="Scan barcode here..."
                 value={formData.sku}
                 onChange={(e) =>
-                  setFormData({ ...formData, sku: e.target.value })
+                  setFormData({
+                    ...formData,
+                    sku: e.target.value,
+                  })
                 }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && formData.sku.length > 3) {
+                  if (
+                    e.key === "Enter" &&
+                    formData.sku.length > 3
+                  ) {
                     e.preventDefault();
-                    document.getElementById("name")?.focus();
+                    document
+                      .getElementById("name")
+                      ?.focus();
                   }
                 }}
                 autoFocus
@@ -147,12 +179,18 @@ export function AddProductModal({
 
             {/* Product Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Product Name</Label>
+              <Label htmlFor="name">
+                Product Name
+              </Label>
+
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({
+                    ...formData,
+                    name: e.target.value,
+                  })
                 }
                 required
               />
@@ -161,78 +199,121 @@ export function AddProductModal({
             {/* Category */}
             <div className="space-y-2">
               <Label>Category</Label>
+
               <Select
                 value={formData.category}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, category: value })
+                  setFormData({
+                    ...formData,
+                    category: value,
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
+
                 <SelectContent>
-                  <SelectItem value="1">Engine Parts</SelectItem>
-                  <SelectItem value="2">Electrical Parts</SelectItem>
-                  <SelectItem value="3">Brake System</SelectItem>
-                  <SelectItem value="4">Suspension</SelectItem>
-                  <SelectItem value="5">Tires & Wheels</SelectItem>
-                  <SelectItem value="6">Oils & Fluids</SelectItem>
-                  <SelectItem value="7">Accessories</SelectItem>
-                  <SelectItem value="8">Tools & Equipment</SelectItem>
+                  <SelectItem value="1">
+                    Engine Parts
+                  </SelectItem>
+
+                  <SelectItem value="2">
+                    Electrical Parts
+                  </SelectItem>
+
+                  <SelectItem value="3">
+                    Brake System
+                  </SelectItem>
+
+                  <SelectItem value="4">
+                    Suspension
+                  </SelectItem>
+
+                  <SelectItem value="5">
+                    Tires & Wheels
+                  </SelectItem>
+
+                  <SelectItem value="6">
+                    Oils & Fluids
+                  </SelectItem>
+
+                  <SelectItem value="7">
+                    Accessories
+                  </SelectItem>
+
+                  <SelectItem value="8">
+                    Tools & Equipment
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Price & Stock */}
             <div className="grid grid-cols-2 gap-4">
+              {/* Price */}
               <div className="space-y-2">
                 <Label>Price</Label>
+
                 <Input
                   type="number"
                   step="0.01"
                   value={formData.price}
                   onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
+                    setFormData({
+                      ...formData,
+                      price: e.target.value,
+                    })
                   }
                   required
                 />
               </div>
 
+              {/* Stock */}
               <div className="space-y-2">
                 <Label>Stock</Label>
+
                 <Input
                   type="number"
                   value={formData.stock}
                   onChange={(e) =>
-                    setFormData({ ...formData, stock: e.target.value })
+                    setFormData({
+                      ...formData,
+                      stock: e.target.value,
+                    })
                   }
                   required
                 />
               </div>
             </div>
 
-            {/* ✅ Image URL with Preview */}
+            {/* Image URL */}
             <div className="space-y-2">
               <Label>Image URL</Label>
+
               <Input
                 placeholder="https://example.com/image.jpg"
                 value={formData.image_url}
                 onChange={(e) =>
-                  setFormData({ ...formData, image_url: e.target.value })
+                  setFormData({
+                    ...formData,
+                    image_url: e.target.value,
+                  })
                 }
               />
 
-              {formData.image_url && (
-                <div className="mt-2">
-                  <img
-                    src={formData.image_url}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-md border"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://via.placeholder.com/150?text=No+Image";
-                    }}
-                  />
+              {/* ✅ Preview only if image_url exists */}
+             {formData.image_url.trim() !== "" && (
+              <div className="mt-2 w-20 h-20 border rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                <img
+                  src={formData.image_url}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://via.placeholder.com/150?text=No+Image";
+                  }}
+                />
                 </div>
               )}
             </div>
@@ -247,8 +328,13 @@ export function AddProductModal({
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Product"}
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+                {loading
+                  ? "Saving..."
+                  : "Save Product"}
               </Button>
             </DialogFooter>
           </form>

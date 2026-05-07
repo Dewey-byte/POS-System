@@ -204,11 +204,14 @@
     display: block;
   }
 
-  img, video {
-    max-width: 100%;
-    height: auto;
-  }
-
+ img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+img {
+  object-fit: cover;
+}
   button, input, select, optgroup, textarea {
     font: inherit;
     font-feature-settings: inherit;

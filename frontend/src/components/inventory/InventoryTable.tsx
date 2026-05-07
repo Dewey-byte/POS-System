@@ -98,45 +98,58 @@ export function InventoryTable({
     setShowEditDialog(true);
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editProduct) return;
+ const handleEditSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Image validation
-    if (
-      editProduct.image &&
-      !editProduct.image.startsWith("http") &&
-      editProduct.image !== ""
-    ) {
-      setError("Image URL must start with http/https");
-      return;
+  if (!editProduct) return;
+
+  // ✅ Image validation
+  if (
+    editProduct.image &&
+    !editProduct.image.startsWith("http") &&
+    editProduct.image.trim() !== ""
+  ) {
+    setError("Image URL must start with http/https");
+    return;
+  }
+
+  try {
+    // ✅ Build payload dynamically
+    const payload: any = {
+      name: editProduct.name,
+      barcode: editProduct.sku,
+      price: editProduct.price,
+      stock: editProduct.stock,
+      category_id: 1,
+    };
+
+    // ✅ ONLY include image_url if not empty
+    if (editProduct.image?.trim() !== "") {
+      payload.image_url = editProduct.image;
     }
 
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:5000/api/products/${editProduct.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: editProduct.name,
-            barcode: editProduct.sku,
-            price: editProduct.price,
-            stock: editProduct.stock,
-            category_id: 1,
-            image_url: editProduct.image,
-          }),
-        }
-      );
+    const res = await fetch(
+      `http://127.0.0.1:5000/api/products/${editProduct.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
-      if (!res.ok) throw new Error("Update failed");
-
-      setShowEditDialog(false);
-      fetchProducts();
-    } catch (err: any) {
-      alert(err.message);
+    if (!res.ok) {
+      throw new Error("Update failed");
     }
-  };
+
+    setShowEditDialog(false);
+
+    fetchProducts();
+  } catch (err: any) {
+    alert(err.message);
+  }
+};
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -298,31 +311,35 @@ export function InventoryTable({
                   </div>
                 </div>
 
-                {/* IMAGE */}
-                <div className="space-y-2">
-                  <Label>Image URL</Label>
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    value={editProduct.image || ""}
-                    onChange={(e) =>
-                      setEditProduct({
-                        ...editProduct,
-                        image: e.target.value,
-                      })
-                    }
-                  />
+             {/* IMAGE */}
+              <div className="space-y-2">
+                <Label>Image URL</Label>
 
-                  {editProduct.image && (
-                    <img
-                      src={editProduct.image}
-                      className="w-32 h-32 object-cover rounded-md border mt-2"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          "https://via.placeholder.com/150?text=No+Image";
-                      }}
-                    />
-                  )}
-                </div>
+                <Input
+                  placeholder="https://example.com/image.jpg"
+                  value={editProduct.image || ""}
+                  onChange={(e) =>
+                    setEditProduct({
+                      ...editProduct,
+                      image: e.target.value,
+                    })
+                  }
+                />
+
+           {editProduct.image && (
+          <div className="mt-2 w-20 h-20 border rounded-md overflow-hidden bg-muted flex items-center justify-center">
+            <img
+              src={editProduct.image}
+              alt="Preview"
+              className="w-full h-full object-cover block"
+              onError={(e) => {
+                e.currentTarget.src =
+                  "https://via.placeholder.com/150?text=No+Image";
+              }}
+            />
+          </div>
+        )}
+              </div>
 
                 <DialogFooter>
                   <Button type="submit">Save Changes</Button>
