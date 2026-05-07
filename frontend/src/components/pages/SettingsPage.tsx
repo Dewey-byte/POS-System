@@ -366,15 +366,11 @@ export function SettingsPage({
                   className="bg-black/20"
                   type="email"
                   placeholder="e.g. janedoe@example.com"
-                  value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value)}
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
                 />
               </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Role</Label>
-              <Input className="bg-black/20" value={editRole} onChange={(e) => setEditRole(e.target.value)} />
-            </div>
 
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">New Password (Optional)</Label>
