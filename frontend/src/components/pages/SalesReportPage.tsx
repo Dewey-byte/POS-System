@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navbar } from '../layout/Navbar';
 import { Sidebar } from '../layout/Sidebar';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
-import { Calendar } from '../ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import {
@@ -48,8 +46,8 @@ export function SalesReportPage({
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const userRole = user?.role || "cashier";
 
-  const [dateFrom, setDateFrom] = useState<Date>();
-  const [dateTo, setDateTo] = useState<Date>();
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   const [salesData, setSalesData] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -60,28 +58,30 @@ export function SalesReportPage({
   // DATE FILTER HELPER
   //////////////////////////////////////////////////////
 
+  const parseDateOnly = (rawValue?: string) => {
+    if (!rawValue) return null;
+    const datePart = String(rawValue).slice(0, 10);
+    const [y, m, d] = datePart.split("-").map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  };
+
+  const fromDateObj = useMemo(() => parseDateOnly(dateFrom), [dateFrom]);
+  const toDateObj = useMemo(() => parseDateOnly(dateTo), [dateTo]);
+
   const isWithinRange = (dateStr: string) => {
-    if (!dateFrom && !dateTo) return true;
-
-    const date = new Date(dateStr);
-
-    if (dateFrom && date < dateFrom) return false;
-    if (dateTo && date > dateTo) return false;
-
+    if (!fromDateObj && !toDateObj) return true;
+    const parsed = parseDateOnly(dateStr);
+    if (!parsed) return false;
+    if (fromDateObj && parsed < fromDateObj) return false;
+    if (toDateObj && parsed > toDateObj) return false;
     return true;
   };
 
-  const filteredTransactions = transactions.filter(t => isWithinRange(t.date));
-  const filteredServiceRecords = serviceRecords.filter(s => isWithinRange(s.date));
-  const filteredSalesData = salesData.filter(s => isWithinRange(s.date));
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const filteredTransactions = transactions.filter((t) => isWithinRange(t.date));
+  const filteredServiceRecords = serviceRecords.filter((s) => isWithinRange(s.date));
+  const filteredSalesData = salesData.filter((s) => isWithinRange(s.date));
+  const filteredServiceData = serviceData.filter((s) => isWithinRange(s.date));
 
   //////////////////////////////////////////////////////
   // FETCH SALES REPORT DATA
@@ -91,7 +91,7 @@ export function SalesReportPage({
     let url = `${API_URL}/reports`;
 
     if (dateFrom && dateTo) {
-      url += `?date_from=${dateFrom.toISOString()}&date_to=${dateTo.toISOString()}`;
+      url += `?date_from=${dateFrom}&date_to=${dateTo}`;
     }
 
     const response = await fetch(url);
@@ -148,7 +148,14 @@ export function SalesReportPage({
   // DATE FILTER APPLY
   //////////////////////////////////////////////////////
 
-  const applyDateFilter = () => {
+  const applyDateFilter = async () => {
+    // Keep chart data in sync with server aggregates while tables use the same range locally.
+    await fetchSalesReports();
+  };
+
+  const clearDateFilter = async () => {
+    setDateFrom("");
+    setDateTo("");
     fetchSalesReports();
   };
 
@@ -176,7 +183,7 @@ export function SalesReportPage({
   const doc = new jsPDF();
 
   doc.setFontSize(16);
-  doc.text("Business Reports", 14, 15);
+  doc.text("Sales Report", 14, 15);
 
   //////////////////////////////////////////////////////
   // SALES REPORT HEADER
@@ -199,16 +206,14 @@ export function SalesReportPage({
   });
 
   //////////////////////////////////////////////////////
-  // SERVICE REPORT HEADER
+  // SERVICE REPORT ON A SEPARATE PAGE
   //////////////////////////////////////////////////////
-
-  const nextY = (doc as any).lastAutoTable.finalY + 10;
-
-  doc.setFontSize(12);
-  doc.text("Service Report", 14, nextY);
+  doc.addPage();
+  doc.setFontSize(16);
+  doc.text("Service Report", 14, 15);
 
   autoTable(doc, {
-    startY: nextY + 5,
+    startY: 22,
     head: [["ID", "Date", "Customer", "Type", "Mechanic", "Total", "Status"]],
     body: filteredServiceRecords.map((s) => [
       s.id,
@@ -221,7 +226,7 @@ export function SalesReportPage({
     ]),
   });
 
-  doc.save("business_reports.pdf");
+  doc.save("sales_and_service_reports.pdf");
 };
   ////////////////////////////////////////////////////////
   // UI
@@ -287,10 +292,8 @@ export function SalesReportPage({
 
       <input
         type="date"
-        value={dateFrom ? dateFrom.toISOString().split("T")[0] : ""}
-        onChange={(e) =>
-          setDateFrom(e.target.value ? new Date(e.target.value) : undefined)
-        }
+        value={dateFrom}
+        onChange={(e) => setDateFrom(e.target.value)}
         className="border border-border rounded-md px-3 py-2 bg-card text-foreground"
       />
 
@@ -303,10 +306,8 @@ export function SalesReportPage({
 
       <input
         type="date"
-        value={dateTo ? dateTo.toISOString().split("T")[0] : ""}
-        onChange={(e) =>
-          setDateTo(e.target.value ? new Date(e.target.value) : undefined)
-        }
+        value={dateTo}
+        onChange={(e) => setDateTo(e.target.value)}
         className="border border-border rounded-md px-3 py-2 bg-card text-foreground"
       />
 
@@ -314,6 +315,9 @@ export function SalesReportPage({
 
     <Button onClick={applyDateFilter}>
       Apply Filter
+    </Button>
+    <Button variant="outline" onClick={clearDateFilter}>
+      Clear
     </Button>
 
   </div>
@@ -360,7 +364,7 @@ export function SalesReportPage({
 
                   <ResponsiveContainer width="100%" height={300}>
 
-                    <LineChart data={salesData}>
+                    <LineChart data={filteredSalesData}>
 
                       <CartesianGrid strokeDasharray="3 3" />
 
@@ -499,7 +503,7 @@ export function SalesReportPage({
 
                   <ResponsiveContainer width="100%" height={300}>
 
-                    <BarChart data={serviceData}>
+                    <BarChart data={filteredServiceData}>
 
                       <CartesianGrid strokeDasharray="3 3" />
 

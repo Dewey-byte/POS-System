@@ -9,6 +9,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  stock: number;
   image: string;
 }
 
@@ -39,6 +40,7 @@ export function CartSidebar({
   const [discount, setDiscount] = useState<number>(0);
   const [receiptOpen, setReceiptOpen] = useState<boolean>(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -48,6 +50,8 @@ export function CartSidebar({
   const grandTotal = Math.max(0, subtotal - discount);
 
   const handleCheckout = async () => {
+    if (isCheckingOut || cart.length === 0) return;
+
     const saleData = {
       items: cart.map((item) => ({
         product_id: Number(item.id),
@@ -61,13 +65,9 @@ export function CartSidebar({
     };
 
     try {
-      // 1. EXISTING CHECKOUT (UNCHANGED)
-      const checkoutRes = await axios.post(
-        "http://127.0.0.1:5000/api/products/checkout",
-        saleData
-      );
+      setIsCheckingOut(true);
 
-      // 2. NEW SALES LOG (ADDED)
+      // Single source of truth: /api/sales handles stock deduction + sale log.
       const salesRes = await axios.post(
         "http://127.0.0.1:5000/api/sales/",
         {
@@ -97,6 +97,8 @@ export function CartSidebar({
     } catch (err: any) {
       console.error("Checkout failed:", err.response?.data || err.message);
       alert(err.response?.data?.error || "Checkout failed");
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -184,11 +186,16 @@ export function CartSidebar({
                         onClick={() =>
                           onUpdateQuantity(item.id, item.quantity + 1)
                         }
-                        className="h-5 w-5 flex items-center justify-center text-zinc-500 hover:text-orange-500"
+                        disabled={item.quantity >= item.stock}
+                        className="h-5 w-5 flex items-center justify-center text-zinc-500 hover:text-orange-500 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
+
+                    <span className="text-[10px] text-zinc-500">
+                      max {item.stock}
+                    </span>
 
                     <button
                       onClick={() => onUpdateQuantity(item.id, 0)}
@@ -228,9 +235,10 @@ export function CartSidebar({
           {/* BUTTON */}
           <button
             onClick={handleCheckout}
+            disabled={isCheckingOut}
             className="w-full bg-primary hover:bg-orange-500 py-3 font-bold uppercase disabled:opacity-50 text-primary-foreground rounded-md"
           >
-            Confirm
+            {isCheckingOut ? "Processing..." : "Confirm"}
           </button>
         </div>
       )}

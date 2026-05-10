@@ -4,6 +4,16 @@ from extensions import db
 
 mechanics_bp = Blueprint("mechanics", __name__)
 
+def normalize_phone(value):
+    if not value:
+        return ""
+    return "".join(ch for ch in str(value) if ch.isdigit())
+
+def normalize_specialization(value):
+    if isinstance(value, list):
+        return ", ".join([str(item).strip() for item in value if str(item).strip()])
+    return value
+
 # GET ALL MECHANICS
 @mechanics_bp.route("/", methods=["GET"])
 def fetch_all():
@@ -55,9 +65,9 @@ def create_mechanic():
 
     new_mech = Mechanic(
         name=data.get("name"),
-        phone=data.get("phone"),
+        phone=normalize_phone(data.get("phone")),
         email=data.get("email"),
-        specialization=data.get("specialization"),
+        specialization=normalize_specialization(data.get("specialization")),
         experience=data.get("experience", 0),
         status=data.get("status", "available"),
         
@@ -80,9 +90,11 @@ def update_mechanic(mech_id):
 
     # Update fields if provided, otherwise keep existing values
     mech.name = data.get("name", mech.name)
-    mech.phone = data.get("phone", mech.phone)
+    mech.phone = normalize_phone(data.get("phone", mech.phone))
     mech.email = data.get("email", mech.email)
-    mech.specialization = data.get("specialization", mech.specialization)
+    mech.specialization = normalize_specialization(
+        data.get("specialization", mech.specialization)
+    )
     mech.experience = data.get("experience", mech.experience)
 
     db.session.commit()

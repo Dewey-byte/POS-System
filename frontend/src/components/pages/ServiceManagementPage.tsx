@@ -19,7 +19,9 @@ import {
   ChevronUp, 
   User, 
   Phone, 
-  Calendar 
+  Calendar,
+  Pencil,
+  XCircle
 } from "lucide-react";
 
 import {
@@ -80,6 +82,17 @@ interface ServiceJob {
   estimated_completion?: string;
 }
 
+interface EditServiceJobForm {
+  customer_name: string;
+  motorcycle_brand: string;
+  motorcycle_model: string;
+  plate_number: string;
+  service_type: string;
+  assigned_mechanic: string;
+  labor_cost: number;
+  estimated_completion: string;
+}
+
 export function ServiceManagementPage({
   onNavigate,
   onLogout
@@ -96,6 +109,18 @@ export function ServiceManagementPage({
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [dateReceived, setDateReceived] = useState(new Date());
   const [estimatedCompletion, setEstimatedCompletion] = useState("");
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editJob, setEditJob] = useState<EditServiceJobForm>({
+    customer_name: "",
+    motorcycle_brand: "",
+    motorcycle_model: "",
+    plate_number: "",
+    service_type: "",
+    assigned_mechanic: "",
+    labor_cost: 0,
+    estimated_completion: "",
+  });
 
   const toggleExpand = (id: string) => {
     setExpandedJobId(prev => (prev === id ? null : id));
@@ -371,8 +396,75 @@ export function ServiceManagementPage({
     toast.error("Failed to update status");
   }
 }
+
+  const openEditDialog = (job: ServiceJob) => {
+    setEditingJobId(job.id);
+    setEditJob({
+      customer_name: job.customer_name || "",
+      motorcycle_brand: job.motorcycle_brand || "",
+      motorcycle_model: job.motorcycle_model || "",
+      plate_number: job.plate_number || "",
+      service_type: (job.service_type || []).join(", "),
+      assigned_mechanic: job.assigned_mechanic || "",
+      labor_cost: job.labor_cost || 0,
+      estimated_completion: job.estimated_completion
+        ? String(job.estimated_completion).slice(0, 10)
+        : "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingJobId) return;
+
+    const parsedServiceTypes = editJob.service_type
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    try {
+      await axios.put(
+        `http://localhost:5000/api/sales/service-records/${editingJobId}`,
+        {
+          customer_name: editJob.customer_name,
+          motorcycle_brand: editJob.motorcycle_brand,
+          motorcycle_model: editJob.motorcycle_model,
+          plate_number: editJob.plate_number,
+          mechanic_name: editJob.assigned_mechanic,
+          labor_cost: editJob.labor_cost,
+          service_type: parsedServiceTypes,
+          estimated_completion: editJob.estimated_completion || null,
+        }
+      );
+
+      setServiceJobs((prev) =>
+        prev.map((job) =>
+          job.id === editingJobId
+            ? {
+                ...job,
+                customer_name: editJob.customer_name,
+                motorcycle_brand: editJob.motorcycle_brand,
+                motorcycle_model: editJob.motorcycle_model,
+                plate_number: editJob.plate_number,
+                service_type: parsedServiceTypes,
+                assigned_mechanic: editJob.assigned_mechanic,
+                labor_cost: editJob.labor_cost,
+                estimated_completion: editJob.estimated_completion,
+              }
+            : job
+        )
+      );
+
+      toast.success("Service job updated");
+      setIsEditDialogOpen(false);
+      setEditingJobId(null);
+    } catch (err) {
+      toast.error("Failed to update service job");
+    }
+  };
+
   /* RENDER JOB CARD FUNCTION */
-  const renderJobCard = (job: ServiceJob) => (
+  const renderJobCard = (job: ServiceJob, tab: "monitoring" | "tracking") => (
     <Card key={job.id} className="bg-[#121212] text-white border-border text-gray-200 mb-4 rounded-xl shadow-md overflow-hidden">
       {/* HEADER SECTION */}
       <div
@@ -395,7 +487,7 @@ export function ServiceManagementPage({
         </div>
 
         <div className="flex items-center gap-4">
-          {job.status === "pending" && (
+          {tab === "monitoring" && job.status === "pending" && (
             <Button 
               size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 h-9"
@@ -405,13 +497,43 @@ export function ServiceManagementPage({
             </Button>
           )}
           
-          {job.status === "in-progress" && (
+          {tab === "monitoring" && job.status === "in-progress" && (
             <Button 
               size="sm"
               className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 h-9"
               onClick={(e) => { e.stopPropagation(); handleUpdateStatus(job.id, "completed"); }}
             >
               Mark Complete
+            </Button>
+          )}
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="font-medium px-3 h-9"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEditDialog(job);
+            }}
+          >
+            <Pencil className="w-3.5 h-3.5 mr-1.5" />
+            Edit
+          </Button>
+
+          {tab === "monitoring" && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-red-500/40 text-red-400 hover:text-red-300 font-medium px-3 h-9"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(`Cancel service job ${job.id}?`)) {
+                  handleUpdateStatus(job.id, "cancelled");
+                }
+              }}
+            >
+              <XCircle className="w-3.5 h-3.5 mr-1.5" />
+              Cancel
             </Button>
           )}
 
@@ -827,19 +949,130 @@ export function ServiceManagementPage({
               </TabsList>
 
               <TabsContent value="monitoring" className="space-y-4">
-                {monitoringJobs.map(job => renderJobCard(job))}
+                {monitoringJobs.map(job => renderJobCard(job, "monitoring"))}
                 {monitoringJobs.length === 0 && (
                   <div className="text-center text-muted-foreground py-10">No pending or in-progress jobs found.</div>
                 )}
               </TabsContent>
 
               <TabsContent value="tracking" className="space-y-4">
-                {trackingJobs.map(job => renderJobCard(job))}
+                {trackingJobs.map(job => renderJobCard(job, "tracking"))}
                 {trackingJobs.length === 0 && (
                   <div className="text-center text-muted-foreground py-10">No completed or cancelled jobs found.</div>
                 )}
               </TabsContent>
             </Tabs>
+
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Edit Service Job</DialogTitle>
+                </DialogHeader>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Customer Name</label>
+                    <Input
+                      value={editJob.customer_name}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, customer_name: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Assigned Mechanic</label>
+                    <select
+                      className="w-full h-10 border rounded-md px-3 bg-background"
+                      value={editJob.assigned_mechanic}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, assigned_mechanic: e.target.value }))
+                      }
+                    >
+                      <option value="">Select mechanic</option>
+                      {mechanicWorkload.map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name} ({m.jobCount} jobs)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Motorcycle Brand</label>
+                    <Input
+                      value={editJob.motorcycle_brand}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, motorcycle_brand: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Motorcycle Model</label>
+                    <Input
+                      value={editJob.motorcycle_model}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, motorcycle_model: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Plate Number</label>
+                    <Input
+                      value={editJob.plate_number}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, plate_number: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Estimated Completion</label>
+                    <Input
+                      type="date"
+                      value={editJob.estimated_completion}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, estimated_completion: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-sm font-medium">Service Types (comma-separated)</label>
+                    <Input
+                      value={editJob.service_type}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({ ...prev, service_type: e.target.value }))
+                      }
+                      placeholder="Oil Change, Brake Repair"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-sm font-medium">Labor Cost</label>
+                    <Input
+                      type="number"
+                      value={editJob.labor_cost}
+                      onChange={(e) =>
+                        setEditJob((prev) => ({
+                          ...prev,
+                          labor_cost: Number(e.target.value) || 0,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveEdit}>Save Changes</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
           </div>
         </main>

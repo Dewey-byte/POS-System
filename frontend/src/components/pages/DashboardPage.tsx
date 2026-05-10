@@ -8,12 +8,12 @@ import { SalesChart } from "../dashboard/SalesChart";
 import { QuickActionButtons } from "../dashboard/QuickActionButtons";
 
 import {
-  DollarSign,
-  Package,
-  AlertTriangle,
-  TrendingUp,
   Wrench,
   Clock,
+  DollarSign,
+  ShoppingCart,
+  Activity,
+  Users,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -45,6 +45,12 @@ interface ServiceJob {
   status: "pending" | "in-progress" | "completed" | "cancelled";
 }
 
+interface SalesPoint {
+  date: string;
+  sales: number;
+  transactions: number;
+}
+
 export function DashboardPage({
   onNavigate,
   onLogout,
@@ -55,6 +61,7 @@ export function DashboardPage({
   /* STATE */
   const [mechanics, setMechanics] = useState<Mechanic[]>([]);
   const [serviceJobs, setServiceJobs] = useState<ServiceJob[]>([]);
+  const [salesTrend, setSalesTrend] = useState<SalesPoint[]>([]);
 
   /* FETCH DATA */
   useEffect(() => {
@@ -64,13 +71,15 @@ export function DashboardPage({
 
   const fetchDashboardData = async () => {
     try {
-      const [mechanicsRes, servicesRes] = await Promise.all([
+      const [mechanicsRes, servicesRes, salesRes] = await Promise.all([
         axios.get("http://localhost:5000/api/mechanics/"),
         axios.get("http://localhost:5000/api/sales/service-records"),
+        axios.get("http://localhost:5000/api/sales/reports"),
       ]);
 
       setMechanics(mechanicsRes.data || []);
       setServiceJobs(servicesRes.data || []);
+      setSalesTrend(salesRes.data || []);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }
@@ -81,6 +90,7 @@ export function DashboardPage({
 const serviceStats = {
   pending: serviceJobs.filter((j) => j.status === "pending").length,
   inProgress: serviceJobs.filter((j) => j.status === "in-progress").length,
+  completed: serviceJobs.filter((j) => j.status === "completed").length,
   total:
     serviceJobs.filter(
       (j) => j.status === "pending" || j.status === "in-progress"
@@ -91,6 +101,25 @@ const serviceStats = {
     available: mechanics.filter((m) => m.status === "available").length,
     busy: mechanics.filter((m) => m.status === "busy").length,
     total: mechanics.length,
+  };
+
+  const sortedSales = [...salesTrend].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  const latestSales = sortedSales[sortedSales.length - 1];
+  const previousSales =
+    sortedSales.length > 1 ? sortedSales[sortedSales.length - 2] : undefined;
+
+  const todaySales = latestSales?.sales ?? 0;
+  const previousDaySales = previousSales?.sales ?? 0;
+  const todayTransactions = latestSales?.transactions ?? 0;
+  const previousDayTransactions = previousSales?.transactions ?? 0;
+
+  const formatChange = (current: number, previous: number) => {
+    if (!previous) return current ? "+100%" : "0%";
+    const pct = ((current - previous) / previous) * 100;
+    const signed = pct >= 0 ? "+" : "";
+    return `${signed}${pct.toFixed(1)}%`;
   };
 
   return (
@@ -124,7 +153,42 @@ const serviceStats = {
 
           <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-             
+              {/* KPI STATS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <KPIStatsCard
+                  title="Sales Today"
+                  value={`₱${todaySales.toFixed(2)}`}
+                  change={formatChange(todaySales, previousDaySales)}
+                  trend={todaySales >= previousDaySales ? "up" : "down"}
+                  icon={DollarSign}
+                  comparisonLabel="vs previous day"
+                />
+                <KPIStatsCard
+                  title="Transactions Today"
+                  value={String(todayTransactions)}
+                  change={formatChange(todayTransactions, previousDayTransactions)}
+                  trend={todayTransactions >= previousDayTransactions ? "up" : "down"}
+                  icon={ShoppingCart}
+                  comparisonLabel="vs previous day"
+                />
+                <KPIStatsCard
+                  title="Active Services"
+                  value={String(serviceStats.total)}
+                  change={`${serviceStats.completed} completed`}
+                  trend={serviceStats.completed >= serviceStats.total ? "up" : "down"}
+                  icon={Activity}
+                  comparisonLabel="completed vs active"
+                />
+                <KPIStatsCard
+                  title="Mechanic Availability"
+                  value={`${mechanicStats.available}/${mechanicStats.total || 0}`}
+                  change={`${mechanicStats.busy} busy`}
+                  trend={mechanicStats.available >= mechanicStats.busy ? "up" : "down"}
+                  icon={Users}
+                  comparisonLabel="available vs busy"
+                />
+              </div>
+
               {/* QUICK ACTIONS */}
               <QuickActionButtons onNavigate={onNavigate} />
 

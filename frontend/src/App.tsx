@@ -18,8 +18,7 @@ type Page =
   | "sales"
   | "settings"
   | "services"
-  | "mechanics"
-  | "customers";
+  | "mechanics";
 
 type UserRole = "admin" | "cashier";
 
@@ -27,6 +26,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("login");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
+  // Keep route guards centralized so page access stays consistent.
   const rolePermissions: Record<UserRole, Page[]> = {
     admin: [
       "dashboard",
@@ -36,7 +36,6 @@ export default function App() {
       "settings",
       "services",
       "mechanics",
-      "customers",
     ],
     cashier: ["dashboard", "pos", "inventory", "services"],
   };
@@ -137,7 +136,9 @@ export default function App() {
       <>
         <SettingsPage
           onNavigate={handleNavigate}
-          onLogout={handleLogout} userRole={"admin"}        />
+          onLogout={handleLogout}
+          userRole={userRole}
+        />
         <Toaster />
       </>
     );

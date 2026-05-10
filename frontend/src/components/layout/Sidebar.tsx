@@ -51,8 +51,6 @@ export function Sidebar({
     return true;
   });
 
-  console.log("USER ROLE:", userRole);
-
   return (
     <div className="w-64 sticky top-[73px] h-[calc(100vh-73px)] bg-sidebar border-r border-sidebar-border p-4">
       <nav className="space-y-2">

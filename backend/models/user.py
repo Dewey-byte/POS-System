@@ -1,4 +1,4 @@
-from app import db
+from extensions import db
 
 class User(db.Model):
     __tablename__ = "users" 
@@ -6,4 +6,12 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default="staff")
+    role = db.Column(db.String(20), nullable=False, default="cashier")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "username": self.username,
+            "role": self.role,
+        }

@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Label } from '../ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { toast } from 'sonner';
 import { Progress } from '../ui/progress';
 
@@ -48,6 +47,22 @@ interface Mechanic {
   }[];
 }
 
+const SPECIALIZATION_OPTIONS = [
+  { value: 'Engine Specialist', label: 'Engine Specialist' },
+  { value: 'Brake & Suspension', label: 'Brake & Suspension' },
+  { value: 'Electrical Systems', label: 'Electrical Systems' },
+  { value: 'General Maintenance', label: 'General Maintenance' },
+  { value: 'Bodywork & Paint', label: 'Bodywork & Paint' },
+];
+
+const splitSpecializations = (value: string) =>
+  (value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const sanitizePhone = (value: string) => value.replace(/\D/g, '');
+
 export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -65,7 +80,14 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
     name: '',
     phone: '',
     email: '',
-    specialization: '',
+    specialization: [] as string[],
+    experience: 0,
+  });
+  const [newMechanicForm, setNewMechanicForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    specialization: [] as string[],
     experience: 0,
   });
 
@@ -106,9 +128,9 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
     if (selectedMechanic) {
       setEditForm({
         name: selectedMechanic.name || '',
-        phone: selectedMechanic.phone || '',
+        phone: sanitizePhone(selectedMechanic.phone || ''),
         email: selectedMechanic.email || '',
-        specialization: selectedMechanic.specialization || '',
+        specialization: splitSpecializations(selectedMechanic.specialization || ''),
         experience: selectedMechanic.experience || 0,
       });
     }
@@ -122,7 +144,34 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
 
     setEditForm(prev => ({
       ...prev,
-      [name]: name === 'experience' ? Number(value) : value
+      [name]:
+        name === 'experience'
+          ? Number(value)
+          : name === 'phone'
+          ? sanitizePhone(value)
+          : value
+    }));
+  };
+
+  const toggleSpecialization = (
+    value: string,
+    target: 'edit' | 'add'
+  ) => {
+    if (target === 'edit') {
+      setEditForm((prev) => ({
+        ...prev,
+        specialization: prev.specialization.includes(value)
+          ? prev.specialization.filter((item) => item !== value)
+          : [...prev.specialization, value],
+      }));
+      return;
+    }
+
+    setNewMechanicForm((prev) => ({
+      ...prev,
+      specialization: prev.specialization.includes(value)
+        ? prev.specialization.filter((item) => item !== value)
+        : [...prev.specialization, value],
     }));
   };
 
@@ -136,7 +185,11 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editForm),
+          body: JSON.stringify({
+            ...editForm,
+            specialization: editForm.specialization.join(', '),
+            phone: sanitizePhone(editForm.phone),
+          }),
         }
       );
 
@@ -146,7 +199,14 @@ export function MechanicsPage({ onNavigate, onLogout }: MechanicsPageProps) {
 
       setMechanics(prev =>
         prev.map(m =>
-          m.id === selectedMechanic?.id ? { ...m, ...editForm } : m
+          m.id === selectedMechanic?.id
+            ? {
+                ...m,
+                ...editForm,
+                phone: sanitizePhone(editForm.phone),
+                specialization: editForm.specialization.join(', '),
+              }
+            : m
         )
       );
 
@@ -168,23 +228,23 @@ const filteredMechanics = mechanics.filter(mechanic => {
   const name = mechanic?.name ?? '';
   const specialization = mechanic?.specialization ?? '';
   const id = mechanic?.id ?? '';
-
-  return (
-    name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
+return (
+  name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  String(id).toLowerCase().includes(searchTerm.toLowerCase())
+);
 });
 
   //  ADD MECHANIC 
   const handleAddMechanic = async () => {
     try {
       const newMechanic = {
-        name: (document.getElementById('name') as HTMLInputElement).value,
-        phone: (document.getElementById('phone') as HTMLInputElement).value,
-        email: (document.getElementById('email') as HTMLInputElement).value,
-        specialization: 'General',
-        experience: Number((document.getElementById('experience') as HTMLInputElement).value),
+        name: newMechanicForm.name,
+        phone: sanitizePhone(newMechanicForm.phone),
+        email: newMechanicForm.email,
+        specialization: newMechanicForm.specialization.join(', ') || 'General Maintenance',
+        experience: Number(newMechanicForm.experience),
 
         // keep UI compatible
         status: 'available',
@@ -203,14 +263,19 @@ const filteredMechanics = mechanics.filter(mechanic => {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to create mechanic');
+      }
 
-      setMechanics(prev => [...prev, {
-        ...data,
-        status: data.status || 'available',
-        current_jobs: data.current_jobs || 0,
-        completed_jobs: data.completed_jobs || 0,    
-        active_jobs: data.active_jobs || []
-      }]);
+      await fetchMechanics();
+
+      setNewMechanicForm({
+        name: '',
+        phone: '',
+        email: '',
+        specialization: [],
+        experience: 0,
+      });
 
       toast.success('Mechanic added successfully');
       setIsAddDialogOpen(false);
@@ -259,15 +324,6 @@ const filteredMechanics = mechanics.filter(mechanic => {
     totalCompleted: mechanics.reduce((sum, m) => sum + m.completed_jobs, 0)
   };
 
-  function setIsOpen(arg0: boolean): void {
-    throw new Error('Function not implemented.');
-  }
-  
-  /* =======================
-     ROLE ACCESS CONTROL
-  ======================= */
-  const canManageUsers = userRole === "admin";
-
   if (userRole === "cashier") {
     return (
       <div className="p-10 text-red-500">
@@ -301,70 +357,99 @@ const filteredMechanics = mechanics.filter(mechanic => {
                   </Button>
                 </DialogTrigger>
                 
-         <DialogContent className="p-0">
-        <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
-          <DialogHeader className="px-6 py-4">
-      
-          <DialogTitle>Add New Mechanic</DialogTitle>
-        </DialogHeader>
+         <DialogContent className="mx-auto w-[calc(100vw-2rem)] max-w-2xl sm:w-full">
+          <DialogHeader>
+            <DialogTitle>Add New Mechanic</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Name + Phone */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="Enter mechanic name" />
+          <div className="space-y-5 py-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter mechanic name"
+                  value={newMechanicForm.name}
+                  onChange={(e) =>
+                    setNewMechanicForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  placeholder="0917XXXXXXXX"
+                  inputMode="numeric"
+                  value={newMechanicForm.phone}
+                  onChange={(e) =>
+                    setNewMechanicForm((prev) => ({
+                      ...prev,
+                      phone: sanitizePhone(e.target.value),
+                    }))
+                  }
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" placeholder="0917-XXX-XXXX" />
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="mechanic@shop.com"
+                value={newMechanicForm.email}
+                onChange={(e) =>
+                  setNewMechanicForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="specialization">Specializations</Label>
+                <div className="space-y-2 border rounded-md p-3 max-h-44 overflow-y-auto">
+                  {SPECIALIZATION_OPTIONS.map((option) => (
+                    <label key={option.value} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={newMechanicForm.specialization.includes(option.value)}
+                        onChange={() => toggleSpecialization(option.value, 'add')}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="experience">Years of Experience</Label>
+                <Input
+                  id="experience"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={newMechanicForm.experience}
+                  onChange={(e) =>
+                    setNewMechanicForm((prev) => ({
+                      ...prev,
+                      experience: Number(e.target.value) || 0,
+                    }))
+                  }
+                />
+              </div>
             </div>
           </div>
 
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input id="email" type="email" placeholder="mechanic@shop.com" />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddMechanic} className="bg-primary hover:bg-primary/90">
+              Add Mechanic
+            </Button>
           </div>
-
-          {/* Specialization + Experience */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="specialization">Specialization</Label>
-              <Select>
-                <SelectTrigger id="specialization">
-                  <SelectValue placeholder="Select specialization" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="engine">Engine Specialist</SelectItem>
-                  <SelectItem value="brake">Brake & Suspension</SelectItem>
-                  <SelectItem value="electrical">Electrical Systems</SelectItem>
-                  <SelectItem value="general">General Maintenance</SelectItem>
-                  <SelectItem value="bodywork">Bodywork & Paint</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="experience">Years of Experience</Label>
-              <Input id="experience" type="number" placeholder="0" />
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-2 border-t border-border pt-4">
-
-          <Button
-            onClick={handleAddMechanic}
-            className="bg-primary hover:bg-primary/90"
-          >
-            Add Mechanic
-          </Button>
-        </div>
-        </div>
       </DialogContent>
 
                 
@@ -547,21 +632,28 @@ const filteredMechanics = mechanics.filter(mechanic => {
 
   {/* Mechanic Details Dialog */}
 <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-  <DialogContent className="p-0">
-        <div className="bg-card border border-border rounded-xl w-full max-w-lg shadow-xl">
-          <DialogHeader className="px-6 py-4">
+  <DialogContent className="mx-auto w-[calc(100vw-2rem)] max-w-3xl sm:w-full">
+      <DialogHeader>
         <DialogTitle>Edit Mechanic Details</DialogTitle>
       </DialogHeader>
 
       {selectedMechanic && (
-        <div className="space-y-6">
+        <div className="space-y-6 py-2">
 
           {/* Basic Info */}
-          <div className="grid grid-cols-2 gap-4">
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Mechanic ID</Label>
-              <p className="text-foreground">{selectedMechanic.id}</p>
+              <Input value={selectedMechanic.id} readOnly />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <div className="h-10 flex items-center">
+                <Badge className={getStatusColor(selectedMechanic.status)}>
+                  {selectedMechanic.status}
+                </Badge>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -579,6 +671,7 @@ const filteredMechanics = mechanics.filter(mechanic => {
                 name="phone"
                 value={editForm.phone}
                 onChange={handleChange}
+                inputMode="numeric"
               />
             </div>
 
@@ -591,66 +684,33 @@ const filteredMechanics = mechanics.filter(mechanic => {
               />
             </div>
 
-           {/* Specialization + Experience */}
-<div className="grid grid-cols-2 gap-4">
-
-  <div className="space-y-2">
-    <Label htmlFor="specialization">Specialization</Label>
-
-    <Select
-      value={editForm.specialization}
-      onValueChange={(value) =>
-        setEditForm((prev) => ({
-          ...prev,
-          specialization: value,
-        }))
-      }
-    >
-      <SelectTrigger id="specialization">
-        <SelectValue placeholder="Select specialization" />
-      </SelectTrigger>
-
-      <SelectContent>
-        <SelectItem value="engine">Engine Specialist</SelectItem>
-        <SelectItem value="brake">Brake & Suspension</SelectItem>
-        <SelectItem value="electrical">Electrical Systems</SelectItem>
-        <SelectItem value="general">General Maintenance</SelectItem>
-        <SelectItem value="bodywork">Bodywork & Paint</SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-
-  {/* Experience stays as input */}
-  <div className="space-y-2">
-    <Label htmlFor="experience">Years of Experience</Label>
-    <Input
-      id="experience"
-      type="number"
-      name="experience"
-      value={editForm.experience}
-      onChange={handleChange}
-    />
-  </div>
-
-</div>
-
             <div className="space-y-2">
-              <Label>Experience (years)</Label>
+              <Label htmlFor="experience">Years of Experience</Label>
               <Input
+                id="experience"
                 type="number"
+                min={0}
                 name="experience"
                 value={editForm.experience}
                 onChange={handleChange}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Badge className={getStatusColor(selectedMechanic.status)}>
-                {selectedMechanic.status}
-              </Badge>
+          <div className="space-y-2">
+            <Label htmlFor="specialization">Specializations</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 border rounded-md p-3 max-h-44 overflow-y-auto">
+              {SPECIALIZATION_OPTIONS.map((option) => (
+                <label key={option.value} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={editForm.specialization.includes(option.value)}
+                    onChange={() => toggleSpecialization(option.value, 'edit')}
+                  />
+                  {option.label}
+                </label>
+              ))}
             </div>
-
           </div>
 
           {/* Performance (unchanged) */}
@@ -711,7 +771,6 @@ const filteredMechanics = mechanics.filter(mechanic => {
 
         </div>
       )}
-    </div>
   </DialogContent>
 </Dialog>
     </div>

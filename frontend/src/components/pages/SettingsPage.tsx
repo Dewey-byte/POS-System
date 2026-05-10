@@ -5,7 +5,9 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { UserPlus, Edit2, ShieldAlert, Loader2, Users } from 'lucide-react'; // Modern icons
+import { UserPlus, Edit2, ShieldAlert, Loader2, Users, BellRing, Save, Store, MapPin } from 'lucide-react'; // Modern icons
+import { Switch } from '../ui/switch';
+import { readAppSettings, writeAppSettings } from '../../lib/appSettings';
 
 import {
   Dialog,
@@ -60,6 +62,8 @@ export function SettingsPage({
 
    // DELETE USER
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+  const [appSettings, setAppSettings] = useState(() => readAppSettings());
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
 
   /* FETCH USERS */
   useEffect(() => {
@@ -77,6 +81,10 @@ export function SettingsPage({
     };
     
     fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    setAppSettings(readAppSettings());
   }, []);
 
   /* UPDATE USER */
@@ -135,8 +143,8 @@ export function SettingsPage({
         return;
       }
 
-      // Optimistic or fresh fetch
-      const refreshed = await fetch(`${API_URL}/users`).then(r => r.json());
+      // Re-fetch from the same collection endpoint after creating an account.
+      const refreshed = await fetch(`${API_URL}/`).then(r => r.json());
       setUsers(refreshed);
 
       setShowAdd(false);
@@ -182,6 +190,15 @@ export function SettingsPage({
       setDeletingUserId(null);
     }
   };
+
+  const handleSavePreferences = async () => {
+    setIsSavingPreferences(true);
+    try {
+      writeAppSettings(appSettings);
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
   /* =======================
      ROLE ACCESS CONTROL
   ======================= */
@@ -215,7 +232,7 @@ export function SettingsPage({
       <div className="flex flex-1 overflow-hidden">
         {/* SIDEBAR */}
         <Sidebar
-          currentPage="dashboard"
+          currentPage="settings"
           onNavigate={onNavigate}
           userRole={userRole}
         />
@@ -234,8 +251,119 @@ export function SettingsPage({
             </div>
           </div>
 
-            <div className="p-6"></div>
-              <div className="max-w-7xl mx-auto flex items-center justify-between mb-6">
+            <div className="p-6 space-y-6">
+              <Card className="rounded-2xl border border-white/5 bg-black/20 backdrop-blur-xl shadow-2xl p-6">
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                      <BellRing className="w-5 h-5 text-primary" />
+                      Inventory Alert Preferences
+                    </h2>
+                    <p className="text-muted-foreground mt-1">
+                      Configure low-stock behavior used in Inventory and POS screens.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      Low Stock Threshold
+                    </Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={appSettings.lowStockThreshold}
+                      onChange={(e) =>
+                        setAppSettings((prev) => ({
+                          ...prev,
+                          lowStockThreshold: Number(e.target.value) || 1,
+                        }))
+                      }
+                      className="bg-black/20"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Products with stock at or below this value will be marked as low.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      Enable Low Stock Alerts
+                    </Label>
+                    <div className="h-10 px-3 rounded-md border border-input bg-black/20 flex items-center justify-between">
+                      <span className="text-sm text-foreground">Show warning badges in POS</span>
+                      <Switch
+                        checked={appSettings.lowStockAlertsEnabled}
+                        onCheckedChange={(checked) =>
+                          setAppSettings((prev) => ({
+                            ...prev,
+                            lowStockAlertsEnabled: checked,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      Store Name (Receipt Header)
+                    </Label>
+                    <div className="relative">
+                      <Store className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Input
+                        value={appSettings.storeName}
+                        onChange={(e) =>
+                          setAppSettings((prev) => ({
+                            ...prev,
+                            storeName: e.target.value,
+                          }))
+                        }
+                        className="bg-black/20 pl-10"
+                        placeholder="Motorcycle POS System"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      Store Location (Receipt Header)
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                      <Input
+                        value={appSettings.storeLocation}
+                        onChange={(e) =>
+                          setAppSettings((prev) => ({
+                            ...prev,
+                            storeLocation: e.target.value,
+                          }))
+                        }
+                        className="bg-black/20 pl-10"
+                        placeholder="Main Branch"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-6">
+                  <Button
+                    onClick={handleSavePreferences}
+                    className="rounded-full px-6"
+                    disabled={isSavingPreferences}
+                  >
+                    {isSavingPreferences ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    Save Preferences
+                  </Button>
+                </div>
+              </Card>
+
+              <div className="max-w-7xl mx-auto flex items-center justify-between mb-2">
                 <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   Team Members
@@ -337,8 +465,8 @@ export function SettingsPage({
                 </div>
               )}
             </Card>
-
-          </div>
+            </div>
+            </div>
         </main>
       </div>
 

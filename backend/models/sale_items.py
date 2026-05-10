@@ -20,3 +20,12 @@ class SaleItem(db.Model):
     # ✅ RELATIONSHIPS
     # This allows you to access product info (like name) directly from a sale item
     product = db.relationship("Product", backref="sale_items")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "sale_id": self.sale_id,
+            "product_id": self.product_id,
+            "quantity": self.quantity,
+            "price": self.price,
+        }

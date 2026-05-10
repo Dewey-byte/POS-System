@@ -3,6 +3,13 @@ import { Bike } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 
 type UserRole = "admin" | "cashier";
 
@@ -14,6 +21,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [sendingToken, setSendingToken] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +70,64 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     }
 
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!resetEmail.trim()) {
+      alert("Please enter your email.");
+      return;
+    }
+
+    setSendingToken(true);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/users/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      alert(data.message || "If email exists, a reset token was sent.");
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      alert("Could not send reset token.");
+    } finally {
+      setSendingToken(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetToken.trim() || !newPassword.trim()) {
+      alert("Please enter token and new password.");
+      return;
+    }
+
+    setResettingPassword(true);
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/users/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: resetToken.trim(),
+          new_password: newPassword,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Password reset failed.");
+        return;
+      }
+
+      alert("Password reset successful. You can now login.");
+      setForgotOpen(false);
+      setResetToken("");
+      setNewPassword("");
+    } catch (err) {
+      console.error("Reset password error:", err);
+      alert("Could not reset password.");
+    } finally {
+      setResettingPassword(false);
+    }
   };
 
   return (
@@ -143,6 +214,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               type="button"
               variant="ghost"
               className="w-full text-muted-foreground hover:text-primary"
+              onClick={() => setForgotOpen(true)}
             >
               Forgot Password?
             </Button>
@@ -155,6 +227,66 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           Use your registered account to login
         </p>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="bg-background/95 border-border/50">
+          <DialogHeader>
+            <DialogTitle>Forgot Password</DialogTitle>
+            <DialogDescription>
+              Enter your account email (username) to receive a reset token, then set a new password.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Email (Username)</Label>
+              <Input
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <Button
+              type="button"
+              className="w-full"
+              onClick={handleForgotPassword}
+              disabled={sendingToken}
+            >
+              {sendingToken ? "Sending..." : "Send Reset Token"}
+            </Button>
+
+            <div className="space-y-2">
+              <Label>Reset Token</Label>
+              <Input
+                value={resetToken}
+                onChange={(e) => setResetToken(e.target.value)}
+                placeholder="Paste token from email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 6 characters"
+              />
+            </div>
+
+            <Button
+              type="button"
+              className="w-full"
+              onClick={handleResetPassword}
+              disabled={resettingPassword}
+            >
+              {resettingPassword ? "Resetting..." : "Reset Password"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

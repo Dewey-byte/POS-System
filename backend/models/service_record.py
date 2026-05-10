@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from extensions import db
 
 
 class ServiceRecord(db.Model):
@@ -45,7 +45,7 @@ class ServiceRecord(db.Model):
 
     parts_used = db.Column(
         db.JSON,
-        default=[]
+        default=list
     )
 
     labor_cost = db.Column(
@@ -72,3 +72,25 @@ class ServiceRecord(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "date": self.date.isoformat() if self.date else None,
+            "customer_name": self.customer_name,
+            "mechanic_name": self.mechanic_name,
+            "service_type": self.service_type,
+            "motorcycle_brand": self.motorcycle_brand,
+            "motorcycle_model": self.motorcycle_model,
+            "plate_number": self.plate_number,
+            "parts_used": self.parts_used or [],
+            "labor_cost": self.labor_cost,
+            "total": self.total,
+            "status": self.status,
+            "estimated_completion": (
+                self.estimated_completion.isoformat()
+                if hasattr(self.estimated_completion, "isoformat")
+                else self.estimated_completion
+            ),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

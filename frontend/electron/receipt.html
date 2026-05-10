@@ -2,7 +2,6 @@
 <html>
 <head>
   <style>
-    /* 🔥 PRINT SETUP (CRITICAL FIX) */
     @page {
       margin: 0;
       size: 58mm auto;
@@ -15,8 +14,8 @@
       box-sizing: border-box;
       overflow-x: hidden;
       font-family: monospace;
-      font-size: 12px;
-      line-height: 1.2;
+      font-size: 9px;
+      line-height: 1.05;
     }
 
     * {
@@ -24,33 +23,104 @@
     }
 
     body {
-      padding: 4mm;
+      padding: 0;
+      display: flex;
+      justify-content: center;
     }
-
-    .center {
+    .receipt {
+      width: 51.5mm; /* narrower safe block */
+      transform: translateX(-0.9mm); /* nudge content left to protect right edge */
+    }
+    .center { text-align: center; }
+    .line { border-top: 1px dashed #000; margin: 5px 0; }
+    .muted { opacity: 0.9; }
+    .bold { font-weight: 700; }
+    .title { font-size: 20px; font-weight: 700; }
+    .meta-row { margin: 1px 0; }
+    .table-head {
+      font-weight: 700;
+      margin-bottom: 2px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 0.8mm;
+    }
+    .head-right {
+      display: grid;
+      grid-template-columns: 3.6mm 6.2mm 6.8mm;
+      column-gap: 3.5mm;
+      justify-content: end;
+      margin-right: 40px;
+    }
+    .item-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2mm;
+      margin: 2px 0;
+    }
+    .item-right {
+      text-align: right;
+      white-space: nowrap;
+      min-width: 22mm;
+    }
+    .item-right-labels,
+    .item-right-values {
+      display: flex;
+      justify-content: space-between;
+      gap: 2mm;
+      font-variant-numeric: tabular-nums;
+    }
+    .item-right-labels {
+      opacity: 0.9;
+      font-size: 8px;
+      margin-right: 35px;
+    }
+    .item-right-values {
+      font-size: 9px;
+      font-weight: 700;
+      margin-right: 35px;
+    }
+    .right { text-align: right; }
+    .left { text-align: left; }
+    .total-amount { padding-right: 0; 
+      margin-right: 35px;
+    }
+    .truncate {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .item-name {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-weight: 700;
+    }
+    .item-detail {
+      font-size: 8px;
+      opacity: 0.9;
+      white-space: nowrap;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .hearts {
+      margin-top: 5px;
       text-align: center;
+      letter-spacing: 1px;
     }
-
-    .line {
-      border-top: 1px dashed #000;
-      margin: 6px 0;
+    .footer {
+      text-align: center;
+      margin-top: 4px;
+      font-weight: 700;
     }
-
-    .item {
-      margin-bottom: 6px;
-    }
-
-    .bold {
-      font-weight: bold;
-    }
-
-    /* safer than flex for printers */
-    .row {
-      display: block;
-    }
-
-    .footer-space {
-      height: 40px;
+    .feed-space {
+      height: 100px; /* extra paper feed so footer is not cut */
     }
   </style>
 </head>
@@ -60,61 +130,81 @@
 
   <script>
     const { ipcRenderer } = require("electron");
+    const money = (value) => `₱${Number(value || 0).toFixed(2)}`;
+    const moneyCell = (value) => `${Number(value || 0).toFixed(2)}`;
+    const esc = (value) =>
+      String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
 
     ipcRenderer.on("load-receipt", (event, sale) => {
-      document.getElementById("app").innerHTML = `
-
-        <div class="center">
-          <b>MY STORE</b><br/>
-          Official Receipt
-        </div>
-
-        <div class="line"></div>
-
-        <div>
-          <div>ID: ${sale.sale_id}</div>
-          <div>Date: ${new Date().toLocaleString()}</div>
-          <div>Payment: ${sale.payment_method}</div>
-        </div>
-
-        <div class="line"></div>
-
-        ${sale.items
-          .map(
-            (item) => `
-              <div class="item">
-                <div class="bold">${item.name}</div>
-                <div>
-                  ${item.quantity} x ₱${item.price} = ₱${item.quantity * item.price}
+      const now = new Date().toLocaleString();
+      const storeName = sale.storeName || "Motorcycle POS System";
+      const storeLocation = sale.storeLocation || "Main Branch";
+      const rows = (sale.items || [])
+        .map((item) => {
+          const qty = Number(item.quantity || 0);
+          const price = Number(item.price || 0);
+          const amount = qty * price;
+          return `
+            <div class="item-block">
+              <div class="left">
+                <div class="item-name">${esc(item.name)}</div>
+              </div>
+              <div class="item-right">
+                <div class="item-right-values">
+                  <span>${qty}</span>
+                  <span>${moneyCell(price)}</span>
+                  <span>${moneyCell(amount)}</span>
                 </div>
               </div>
-            `
-          )
-          .join("")}
+            </div>
+          `;
+        })
+        .join("");
 
-        <div class="line"></div>
+      document.getElementById("app").innerHTML = `
+        <div class="receipt">
+        <div class="center">
+            <div class="title">${esc(storeName)}</div>
+            <div class="muted">${esc(storeLocation)}</div>
+          </div>
 
-        <div class="bold">
-          TOTAL: ₱${sale.total_amount}
+          <div class="line"></div>
+
+          <div class="meta-row bold">Order</div>
+          <div class="meta-row">Receipt # ${esc(sale.sale_id)}</div>
+
+          <div class="line"></div>
+
+          <div class="meta-row">Date: ${esc(now)}</div>
+          <div class="meta-row">Payment: ${esc(sale.payment_method || "cash")}</div>
+
+          <div class="line"></div>
+
+          <div class="table-head">
+            <div class="left">ITEM</div>
+            <div class="head-right">
+              <span>QTY</span><span>PRICE</span><span>AMOUNT</span>
+            </div>
+          </div>
+          ${rows}
+
+          <div class="line"></div>
+
+          <div class="total-row">
+            <span>TOTAL</span>
+            <span class="total-amount">${money(sale.total_amount)}</span>
+          </div>
+
+          <div class="hearts">♥ ♥ ♥ ♥ ♥ ♥</div>
+          <div class="footer">THANK YOU!</div>
+          <div class="center muted">for your purchase</div>
+          <div class="feed-space"></div>
+          <div>.</div>
         </div>
-
-        <div class="center" style="margin-top:10px;">
-          Thank you for your purchase!
-        </div>
-
-        <!-- 🔥 FORCE printer to feed paper using REAL content --> 
-        <div> 
-          
-          <br/> 
-          <br/> 
-          <br/>  
-          <span>.
-            </span>
-            <br/> 
-            <span>.
-              </span>
-              <br/> </div>
-
       `;
     });
   </script>

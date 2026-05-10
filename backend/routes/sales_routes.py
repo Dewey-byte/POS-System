@@ -264,6 +264,86 @@ def create_service_records():
         ]
     }), 201
     
+
+@sales_bp.route("/service-records/<id>", methods=["PUT"])
+def update_service_record(id):
+    data = request.json or {}
+    real_id = int(id.replace("SRV-", ""))
+    record = ServiceRecord.query.get_or_404(real_id)
+
+    if "customer_name" in data:
+        record.customer_name = data.get("customer_name") or record.customer_name
+
+    if "service_type" in data:
+        service_type = data.get("service_type")
+        if isinstance(service_type, list):
+            service_type = ", ".join([str(t).strip() for t in service_type if str(t).strip()])
+        record.service_type = service_type or record.service_type
+
+    if "motorcycle_brand" in data:
+        record.motorcycle_brand = data.get("motorcycle_brand", "")
+
+    if "motorcycle_model" in data:
+        record.motorcycle_model = data.get("motorcycle_model", "")
+
+    if "plate_number" in data:
+        record.plate_number = data.get("plate_number", "")
+
+    if "mechanic_name" in data:
+        record.mechanic_name = data.get("mechanic_name") or record.mechanic_name
+
+    if "parts_used" in data:
+        parts = data.get("parts_used") or []
+        record.parts_used = parts if isinstance(parts, str) else json.dumps(parts)
+
+    if "labor_cost" in data:
+        try:
+            record.labor_cost = float(data.get("labor_cost") or 0)
+        except (TypeError, ValueError):
+            record.labor_cost = 0
+
+    if "estimated_completion" in data:
+        estimated_completion = data.get("estimated_completion")
+        if estimated_completion:
+            try:
+                record.estimated_completion = datetime.fromisoformat(estimated_completion)
+            except ValueError:
+                try:
+                    record.estimated_completion = datetime.strptime(estimated_completion, "%Y-%m-%d")
+                except ValueError:
+                    record.estimated_completion = None
+        else:
+            record.estimated_completion = None
+
+    if "total" in data:
+        try:
+            record.total = float(data.get("total") or 0)
+        except (TypeError, ValueError):
+            record.total = record.total or 0
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Service record updated",
+        "record": {
+            "id": f"SRV-{record.id}",
+            "customer": record.customer_name,
+            "type": record.service_type,
+            "mechanic": record.mechanic_name,
+            "brand": record.motorcycle_brand or "",
+            "model": record.motorcycle_model or "",
+            "plate": record.plate_number or "",
+            "labor": float(record.labor_cost) if record.labor_cost else 0,
+            "total": float(record.total) if record.total else 0,
+            "estimated_completion": (
+                record.estimated_completion.strftime("%Y-%m-%d")
+                if hasattr(record.estimated_completion, "strftime")
+                else record.estimated_completion
+            ),
+            "status": normalize_status(record.status),
+        }
+    }), 200
+    
     
 @sales_bp.route("/service-records/<id>/status", methods=["PUT"])
 def update_service_status(id):

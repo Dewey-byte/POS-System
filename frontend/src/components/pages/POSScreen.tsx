@@ -17,6 +17,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  stock: number;
   image: string;
 }
 
@@ -33,8 +34,13 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
     id: number;
     name: string;
     price: number;
+    stock: number;
     image: string;
   }) => {
+    if (product.stock <= 0) {
+      return;
+    }
+
     setCart((prev) => {
       const productIdString = String(product.id);
       const existingItem = prev.find(
@@ -42,6 +48,10 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
       );
 
       if (existingItem) {
+        if (existingItem.quantity >= existingItem.stock) {
+          return prev;
+        }
+
         return prev.map((item) =>
           item.id === productIdString
             ? { ...item, quantity: item.quantity + 1 }
@@ -55,6 +65,7 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
           id: productIdString,
           name: product.name,
           price: product.price,
+          stock: product.stock,
           image: product.image,
           quantity: 1,
         },
@@ -63,15 +74,24 @@ const userRole = user?.role || "cashier"; // default to cashier if not found
   };
 
   const updateQuantity = (id: string | number, quantity: number) => {
-    if (quantity === 0) {
-      setCart((prev) => prev.filter((item) => item.id !== id));
-    } else {
-      setCart((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, quantity } : item
-        )
-      );
+    const normalizedId = String(id);
+
+    if (quantity <= 0) {
+      setCart((prev) => prev.filter((item) => item.id !== normalizedId));
+      return;
     }
+
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.id !== normalizedId) {
+          return item;
+        }
+
+        // Never allow cart quantity to exceed available stock.
+        const cappedQuantity = Math.min(quantity, item.stock);
+        return { ...item, quantity: cappedQuantity };
+      })
+    );
   };
 
   const clearCart = () => setCart([]);

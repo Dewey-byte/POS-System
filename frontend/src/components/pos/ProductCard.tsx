@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { readAppSettings } from "../../lib/appSettings";
 
 interface Product {
   id: number;
@@ -20,8 +21,12 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const [lowStockSettings, setLowStockSettings] = useState(() => readAppSettings());
   const isOutOfStock = product.stock <= 0;
-  const isLowStock = product.stock > 0 && product.stock < 5;
+  const isLowStock =
+    lowStockSettings.lowStockAlertsEnabled &&
+    product.stock > 0 &&
+    product.stock <= lowStockSettings.lowStockThreshold;
 
   // ✅ image fallback state
   const [imgSrc, setImgSrc] = useState(
@@ -29,6 +34,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       ? product.image
       : "/no-image.png"
   );
+
+  useEffect(() => {
+    const syncSettings = () => {
+      setLowStockSettings(readAppSettings());
+    };
+
+    window.addEventListener("app-settings-updated", syncSettings);
+    return () => {
+      window.removeEventListener("app-settings-updated", syncSettings);
+    };
+  }, []);
 
   return (
     <Card className="bg-card border-border overflow-hidden hover:border-primary/50 transition-colors">

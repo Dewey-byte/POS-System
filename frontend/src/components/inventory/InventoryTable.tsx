@@ -22,6 +22,7 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { readAppSettings } from "../../lib/appSettings";
 
 interface Product {
   id: string;
@@ -47,9 +48,23 @@ export function InventoryTable({
   const [error, setError] = useState("");
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    () => readAppSettings().lowStockThreshold
+  );
 
   useEffect(() => {
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const syncSettings = () => {
+      setLowStockThreshold(readAppSettings().lowStockThreshold);
+    };
+
+    window.addEventListener("app-settings-updated", syncSettings);
+    return () => {
+      window.removeEventListener("app-settings-updated", syncSettings);
+    };
   }, []);
 
   const fetchProducts = async () => {
@@ -163,8 +178,8 @@ export function InventoryTable({
       p.sku.toLowerCase().includes(query);
 
     let matchesStock = true;
-    if (stockFilter === "low") matchesStock = p.stock <= 5;
-    if (stockFilter === "normal") matchesStock = p.stock > 5;
+    if (stockFilter === "low") matchesStock = p.stock <= lowStockThreshold;
+    if (stockFilter === "normal") matchesStock = p.stock > lowStockThreshold;
 
     return matchesSearch && matchesStock;
   });
@@ -187,7 +202,7 @@ export function InventoryTable({
 
           <TableBody>
             {filteredProducts.map((item) => {
-              const isLow = item.stock <= 5;
+              const isLow = item.stock <= lowStockThreshold;
 
               return (
                 <TableRow key={item.id}>
